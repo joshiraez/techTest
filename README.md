@@ -6,11 +6,11 @@ I'll be using this Readme.md as a demo of sorts to annotate any design decisions
 
 Required: 
 * Java 11 or above
-* Have 'customers.csv', 'orders.csv', 'products.csv' on the 'main/resources' directory 
+* Have `customers.csv`, `orders.csv`, `products.csv` on the `main/resources` directory 
 
 To run, cd to project root, then:
-* 'gradlew build'
-* java -jar build/libs/interview-1.0-SNAPSHOT.jar
+* `gradlew build`
+* `java -jar build/libs/interview-1.0-SNAPSHOT.jar`
 
 ## Design decisions
 
