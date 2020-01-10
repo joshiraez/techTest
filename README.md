@@ -1,3 +1,19 @@
+# Technical test memo
+
+I'll be using this Readme.md as a demo of sorts to annotate any design decisions or other important stuff.
+
+## How to run
+
+Required: 
+* Java 11 or above
+* Have 'customers.csv', 'orders.csv', 'products.csv' on the main > resources directory 
+
+To run, cd to project root, then:
+* 'gradlew build'
+* java -jar build/libs/interview-1.0-SNAPSHOT.jar
+
+## Design decisions
+
 # Overview
 
 Choose whatever language you're most comfortable with to solve these problems.
@@ -42,3 +58,4 @@ To evaluate our customers, we need a `customer_ranking.csv` containing the follo
 * `firstname` customer first name
 * `lastname` customer last name
 * `total_euros` total euros this customer has spent on products
+
