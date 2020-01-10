@@ -5,8 +5,8 @@ plugins {
 group 'org.joshiraez.demo'
 version '1.0-SNAPSHOT'
 
-sourceCompatibility = 1.11
-targetCompatibility = 1.11
+sourceCompatibility = 11
+targetCompatibility = 11
 
 jar {
     manifest {
