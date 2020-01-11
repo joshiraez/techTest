@@ -9,6 +9,8 @@ import java.util.function.Function;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.contentOf;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 class FileCalculatorShould {
 
@@ -22,6 +24,23 @@ class FileCalculatorShould {
     private final static String TASK1 = "orderPrices";
     private final static String TASK2 = "productCustomers";
     private static final String TASK3 = "customerRanking";
+    public static final String ORDER_PRICES_CSV = "order_prices.csv";
+
+    //Delegation
+    @Test
+    void fileCalculatorDelegatesToOrderPriceCalculatorTheOrderPricesFile() throws IOException {
+        //Given
+        File products = getResourceFileOriginal(PRODUCTS_CSV);
+        File customers = getResourceFileOriginal(CUSTOMERS_CSV);
+        File orders = getResourceFileOriginal(ORDERS_CSV);
+
+        OrderPriceCalculator orderPriceCalculator = mock(OrderPriceCalculator.class);
+        FileCalculator fileCalculator = new FileCalculator(customers, products, orders, OUT_DIRECTORY, orderPriceCalculator);
+        //When
+        fileCalculator.calculateOrderPrices();
+        //Then
+        verify(orderPriceCalculator).calculateOrderPrices();
+    }
 
     //Task 1. Those can be parameterized
     @Test
@@ -250,6 +269,13 @@ class FileCalculatorShould {
     private File getResourceFile(final String task, final String testName, final String fileName) {
 
         final String pathToFile = task + "/" + testName + "/" + fileName;
+
+        return new File(getClass().getResource(pathToFile).getFile());
+    }
+
+    private File getResourceFileOriginal(final String fileName) {
+
+        final String pathToFile = "originals/" + fileName;
 
         return new File(getClass().getResource(pathToFile).getFile());
     }

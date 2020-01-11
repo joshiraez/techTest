@@ -31,6 +31,7 @@ public class FileCalculator {
     private final File products;
     private final File orders;
     private final Path outDirectory;
+    private OrderPriceCalculator orderPriceCalculator;
 
     public FileCalculator(final File customers, final File products, final File orders, final Path outDirectory) {
 
@@ -40,7 +41,23 @@ public class FileCalculator {
         this.outDirectory = outDirectory;
     }
 
+    public FileCalculator(final File customers, final File products, final File orders, final Path outDirectory, final OrderPriceCalculator orderPriceCalculator) {
+
+        this.customers = customers;
+        this.products = products;
+        this.orders = orders;
+        this.outDirectory = outDirectory;
+        this.orderPriceCalculator = orderPriceCalculator;
+    }
+
     public File calculateOrderPrices() throws IOException {
+
+        if (orderPriceCalculator == null) return _orderPriceCalculator();
+
+        return orderPriceCalculator.calculateOrderPrices();
+    }
+
+    public File _orderPriceCalculator() throws IOException {
         final String header = "id,euros";
         final String fileName = "order_prices.csv";
 
