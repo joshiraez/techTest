@@ -10,7 +10,7 @@ Required:
 
 To run, cd to project root, then:
 * `gradlew build`
-* `java -jar build/libs/interview-1.0-SNAPSHOT.jar`
+* `java -jar build/libs/interview-1.0.jar`
 
 To run tests, cd to project root, then:
 * `gradlew test`
