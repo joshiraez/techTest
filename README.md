@@ -14,9 +14,21 @@ To run, cd to project root, then:
 
 ## Design decisions
 
-* TODO: Decided to leave the error handling and file validation after having the 3 tasks finished.
+* I try to avoid as much as possible to load the files in memory (csv files are tipically very heavy)
+  * But I don't do so with the structure I pass to the write CSV method to not make the code too messy
+  * If the results get too memory heavy, it will have to be modified to calculate and write together in the loop, while trying to have the needed data already loaded (like product prices)
+    * Another optimization would be to have any of these two restrictions on the CSV: be indexed, or restricted to not be able to erase records (so all ids are in order and place). Then we could do Random memory access to the files and it could be much quicker
+      * But right now, I settled for this. Those are nice to have in mind if we found performance problems in the future.
 * Using BigDecimal for precision decimal operations. Is much slower than just double types, it depends on the size of the files we will use.
 
+## Backlog decisions
+
+Things I know are improvable but didn't seem they were worth the time for the value they can bring
+
+* Decided to leave the error handling and file validation tests after having the 3 tasks finished. 
+  * These are unrecoverable failures, so there is no great value on having them controlled at first.
+* FileCalculator test class can be parameterized in a Data Driven Testing style
+* Each file generation can be separated to a new class, because they will be maintained in its own.
 
 # Overview
 

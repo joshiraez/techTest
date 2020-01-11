@@ -21,6 +21,7 @@ class FileCalculatorShould {
 
     private final static String TASK1 = "orderPrices";
 
+    //Task 1. Those can be parameterized
     @Test
     void whenThereAreNoOrdersOrderPricesWillHaveNoOrders() throws IOException {
         //Given
@@ -33,7 +34,7 @@ class FileCalculatorShould {
         assertThat(result).exists();
         assertThat(contentOf(result))
                 .as("No orders has no orders records on order_prices")
-                .isEqualToNormalizingNewlines(contentOf(expected));
+                .isEqualTo(contentOf(expected));
     }
 
     @Test
@@ -48,7 +49,7 @@ class FileCalculatorShould {
         assertThat(result).exists();
         assertThat(contentOf(result))
                 .as("When only one order with one product, it should bring the price of the product")
-                .isEqualToNormalizingNewlines(contentOf(expected));
+                .isEqualTo(contentOf(expected));
 
     }
 
@@ -64,7 +65,23 @@ class FileCalculatorShould {
         assertThat(result).exists();
         assertThat(contentOf(result))
                 .as("When only one order with one product, it should bring the price of the product")
-                .isEqualToNormalizingNewlines(contentOf(expected));
+                .isEqualTo(contentOf(expected));
+
+    }
+
+    @Test
+    void whenThereIsMultipleOrdersYouGetTheSumPriceOfItsProductsForEachOrder() throws IOException {
+        //Given
+        final String testName = "whenThereIsMultipleOrdersYouGetTheSumPriceOfItsProductsForEachOrder";
+        final FileCalculator fileCalculator = buildFileCalculatorForTest(testName, TASK1);
+        final File expected = withTestName.apply(testName, getResult).apply(TASK1);
+        //When
+        final File result = fileCalculator.calculateOrderPrices();
+        //Then
+        assertThat(result).exists();
+        assertThat(contentOf(result))
+                .as("When only one order with one product, it should bring the price of the product")
+                .isEqualTo(contentOf(expected));
 
     }
 
