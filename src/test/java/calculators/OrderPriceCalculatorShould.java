@@ -28,16 +28,17 @@ class OrderPriceCalculatorShould {
     void whenThereAreNoOrdersOrderPricesWillHaveNoOrders() throws IOException {
         //Given
         final String testName = "whenThereAreNoOrdersOrderPricesWillHaveNoOrders";
-        final FileCalculator fileCalculator = buildFileCalculatorForTestWithOrderPrice(testName, TASK);
-        final File expected = withTestName.apply(testName, getResult).apply(TASK);
+        final OrderPriceCalculator orderPriceCalculator = buildCalculator(testName);
+        final File expected = getExpected(testName);
         //When
-        final File result = fileCalculator.calculateOrderPrices();
+        final File result = orderPriceCalculator.calculateOrderPrices();
         //Then
         assertThat(result).exists();
         assertThat(contentOf(result))
                 .as("No orders has no orders records on order_prices")
                 .isEqualToIgnoringNewLines(contentOf(expected));
     }
+
 
     @Test
     void whenThereAreOneOrderWithOneItemGetThePriceOfThatItem() throws IOException {
@@ -96,6 +97,13 @@ class OrderPriceCalculatorShould {
         return new File(getClass().getResource(pathToFile).getFile());
     }
 
+    private File getResourceFile(final String testName, final String fileName) {
+
+        final String pathToFile = "/" + TASK + "/" + testName + "/" + fileName;
+
+        return new File(getClass().getResource(pathToFile).getFile());
+    }
+
     private BiFunction<String, String, File> getProducts =
             (String task, String url) -> getResourceFile(task, url, PRODUCTS_CSV);
     private BiFunction<String, String, File> getOrders =
@@ -126,4 +134,22 @@ class OrderPriceCalculatorShould {
 
         return new FileCalculator(customers, products, orders, OUT_DIRECTORY, orderPriceCalculator);
     }
+
+    private OrderPriceCalculator buildCalculator(final String testName) {
+        return new OrderPriceCalculator(getProducts(testName), getOrders(testName), OUT_DIRECTORY);
+    }
+
+    private File getProducts(String testName) {
+        return getResourceFile(testName, PRODUCTS_CSV);
+    }
+
+    private File getOrders(String testName) {
+        return getResourceFile(testName, ORDERS_CSV);
+    }
+
+    private File getExpected(String testName) {
+        return getResourceFile(testName, RESULT_CSV);
+    }
+
+
 }
