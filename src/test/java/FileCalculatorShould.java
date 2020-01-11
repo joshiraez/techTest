@@ -21,6 +21,7 @@ class FileCalculatorShould {
 
     private final static String TASK1 = "orderPrices";
     private final static String TASK2 = "productCustomers";
+    private static final String TASK3 = "customerRanking";
 
     //Task 1. Those can be parameterized
     @Test
@@ -175,6 +176,25 @@ class FileCalculatorShould {
                 .as(testMessage)
                 .isEqualToIgnoringNewLines(contentOf(expected));
     }
+
+    //Task3
+    @Test
+    void whenThereAreNoOrdersTheCustomerRankingWillHaveNoRecords() throws IOException {
+        //Given
+        final String testName = "whenThereAreNoOrdersTheCustomerRankingWillHaveNoRecords";
+        final String task = TASK3;
+        final String testMessage = "When there are no orders, it brings a record empty product customers file";
+        final FileCalculator fileCalculator = buildFileCalculatorForTest(testName, task);
+        final File expected = withTestName.apply(testName, getResult).apply(task);
+        //When
+        final File result = fileCalculator.calculateCustomerRanking();
+        //Then
+        assertThat(result).exists();
+        assertThat(contentOf(result))
+                .as(testMessage)
+                .isEqualToIgnoringNewLines(contentOf(expected));
+    }
+
 
     //Helper methods and closures to reduce boilerplate to get the files
     private File getResourceFile(final String task, final String testName, final String fileName) {

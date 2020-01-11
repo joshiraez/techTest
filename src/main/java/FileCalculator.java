@@ -59,6 +59,15 @@ public class FileCalculator {
         return writeCsv(header, fileName, contents);
     }
 
+    public File calculateCustomerRanking() throws IOException {
+        final String header = "id,firstname,lastname,total_euros";
+        final String fileName = "customer_ranking.csv";
+
+        final List<List<Object>> contents = Arrays.asList();
+
+        return writeCsv(header, fileName, contents);
+    }
+
     private Map<Long, Set<Long>> getCustomersWhoOrderedProducts() throws IOException {
         final BufferedReader orders = new BufferedReader(new FileReader(this.orders));
 
