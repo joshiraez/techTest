@@ -125,14 +125,32 @@ public class FileCalculator {
                 .map(line -> asList(line.split(",")))
                 .collect(
                         toMap(
-                                FileCalculator::getCustomerFromOrderRecord,
-                                this::countProductsFromOrder
+                                this::getCustomerFromOrderRecord,
+                                this::countProductsFromOrder,
+                                this::addProductCountsTogether
                         )
                 );
 
         orders.close();
 
         return productsOrderedByCustomer;
+    }
+
+    private Map<Long, Long> addProductCountsTogether(Map<Long, Long> oneProductCount, Map<Long, Long> otherProductCount) {
+        final HashSet<Long> productsCounted = new HashSet<>(oneProductCount.keySet());
+        productsCounted.addAll(otherProductCount.keySet());
+
+        return productsCounted
+                .stream()
+                .collect(
+                        toMap(
+                                Function.identity(),
+                                product -> Long.sum(
+                                        oneProductCount.getOrDefault(product, 0L),
+                                        otherProductCount.getOrDefault(product, 0L)
+                                )
+                        )
+                );
     }
 
     private Map<Long, BigDecimal> getPriceTotals(final Map<Long, Map<Long, Long>> productsOrderedByOrderId, final Map<Long, BigDecimal> productPrices) {
@@ -336,7 +354,7 @@ public class FileCalculator {
                 .collect(toList());
     }
 
-    private static Long getCustomerFromOrderRecord(List<String> splittedLine) {
+    private Long getCustomerFromOrderRecord(List<String> splittedLine) {
         return Long.parseLong(splittedLine.get(1));
     }
 
