@@ -10,6 +10,7 @@ import java.util.function.Function;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.contentOf;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
 class FileCalculatorShould {
@@ -24,7 +25,7 @@ class FileCalculatorShould {
     private final static String TASK1 = "orderPrices";
     private final static String TASK2 = "productCustomers";
     private static final String TASK3 = "customerRanking";
-    public static final String ORDER_PRICES_CSV = "order_prices.csv";
+    private static final String ORDER_PRICES_CSV = "order_prices.csv";
 
     //Delegation
     @Test
@@ -40,6 +41,28 @@ class FileCalculatorShould {
         fileCalculator.calculateOrderPrices();
         //Then
         verify(orderPriceCalculator).calculateOrderPrices();
+    }
+
+    @Test
+    void fileCalculatorDelegationBringsExpectedOrdersPrice() throws IOException {
+        //Given
+        File products = getResourceFileOriginal(PRODUCTS_CSV);
+        File customers = getResourceFileOriginal(CUSTOMERS_CSV);
+        File orders = getResourceFileOriginal(ORDERS_CSV);
+
+        File expectedOrderPrices = getResourceFileOriginal(ORDER_PRICES_CSV);
+
+        OrderPriceCalculator orderPriceCalculator = spy(new OrderPriceCalculator(products, orders, OUT_DIRECTORY));
+        FileCalculator fileCalculator = new FileCalculator(customers, products, orders, OUT_DIRECTORY, orderPriceCalculator);
+        //When
+        final File result = fileCalculator.calculateOrderPrices();
+        //Then
+        verify(orderPriceCalculator).calculateOrderPrices();
+
+        assertThat(contentOf(result))
+                .as("Expected order prices are generated")
+                .isEqualToIgnoringNewLines(contentOf(expectedOrderPrices));
+
     }
 
     //Task 1. Those can be parameterized

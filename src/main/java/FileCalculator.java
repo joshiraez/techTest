@@ -3,7 +3,6 @@ import org.apache.commons.lang3.tuple.Pair;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.file.Path;
@@ -13,7 +12,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import static java.util.Arrays.asList;
@@ -57,7 +55,7 @@ public class FileCalculator {
         return orderPriceCalculator.calculateOrderPrices();
     }
 
-    public File _orderPriceCalculator() throws IOException {
+    private File _orderPriceCalculator() throws IOException {
         final String header = "id,euros";
         final String fileName = "order_prices.csv";
 
@@ -263,7 +261,6 @@ public class FileCalculator {
     }
 
     //List of orderId to itemsOrdered
-
     private Map<Long, Map<Long, Long>> getProductsOrderedByOrderId() throws IOException {
         final BufferedReader orders = new BufferedReader(new FileReader(this.orders));
 
@@ -281,6 +278,7 @@ public class FileCalculator {
 
         return productsOrderedByOrderId;
     }
+
     private Map<Long, Long> countProductsFromOrder(List<String> splittedOrderRecord) {
         return Arrays.stream(splitProducts(splittedOrderRecord))
                 .map(Long::parseLong)
@@ -301,27 +299,9 @@ public class FileCalculator {
     }
 
     private File writeCsv(String header, String fileName, List<List<Object>> contents) throws IOException {
-        final File file = outDirectory.resolve(fileName).toFile();
-
-        final FileWriter fileWriter = new FileWriter(file);
-
-        fileWriter.append(header).append(System.lineSeparator());
-
-        //Can't use streams because File Writer has checked exceptions and becomes ugly
-        for (List<Object> record : contents) {
-            fileWriter.append(generateCsvRecord(record)).append(System.lineSeparator());
-        }
-
-        fileWriter.close();
-
-        return file;
+        return Utils.writeCsv(header, fileName, contents, outDirectory);
     }
 
-    private String generateCsvRecord(List<Object> record) {
-        return record.stream()
-                .map(Object::toString)
-                .collect(Collectors.joining(","));
-    }
 
     private List<List<Object>> transformOrderPricesToRecords(final Map<Long, BigDecimal> orderPrices) {
         return orderPrices
@@ -375,11 +355,9 @@ public class FileCalculator {
         return Long.parseLong(splittedLine.get(1));
     }
 
-
     private static List<String> splitByComma(String line) {
         return asList(line.split(","));
     }
-
 
     private <T, U extends Comparable<U>> List<Pair<T, U>> sortByValue(final Map<T, U> mapToSortByValue) {
         return mapToSortByValue.entrySet()
