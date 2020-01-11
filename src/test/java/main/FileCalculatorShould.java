@@ -112,7 +112,7 @@ class FileCalculatorShould {
         final String testName = "whenThereAreNoOrdersYouGetAProductCustomersFileWithNoRecords";
         final String task = TASK2;
         final String testMessage = "When there are no orders, it brings a record empty product customers file";
-        final FileCalculator fileCalculator = buildFileCalculatorForTest(testName, task);
+        final FileCalculator fileCalculator = buildFileCalculatorForTestWithProductCustomer(testName, task);
         final File expected = withTestName.apply(testName, getResult).apply(task);
         //When
         final File result = fileCalculator.calculateProductCustomers();
@@ -130,7 +130,7 @@ class FileCalculatorShould {
         final String task = TASK2;
         final String testMessage = "When there is a single order with a single product, " +
                 "it brings a record associating the product with the customer of the order";
-        final FileCalculator fileCalculator = buildFileCalculatorForTest(testName, task);
+        final FileCalculator fileCalculator = buildFileCalculatorForTestWithProductCustomer(testName, task);
         final File expected = withTestName.apply(testName, getResult).apply(task);
         //When
         final File result = fileCalculator.calculateProductCustomers();
@@ -148,7 +148,7 @@ class FileCalculatorShould {
         final String task = TASK2;
         final String testMessage = "When there is a single order with multiple products, " +
                 "it brings a record associating all the products with the customer of the order";
-        final FileCalculator fileCalculator = buildFileCalculatorForTest(testName, task);
+        final FileCalculator fileCalculator = buildFileCalculatorForTestWithProductCustomer(testName, task);
         final File expected = withTestName.apply(testName, getResult).apply(task);
         //When
         final File result = fileCalculator.calculateProductCustomers();
@@ -166,7 +166,7 @@ class FileCalculatorShould {
         final String task = TASK2;
         final String testMessage = "When there are multiple orders of the same product, " +
                 "it brings a record associating all the products with the customer of the order";
-        final FileCalculator fileCalculator = buildFileCalculatorForTest(testName, task);
+        final FileCalculator fileCalculator = buildFileCalculatorForTestWithProductCustomer(testName, task);
         final File expected = withTestName.apply(testName, getResult).apply(task);
         //When
         final File result = fileCalculator.calculateProductCustomers();
@@ -184,7 +184,7 @@ class FileCalculatorShould {
         final String task = TASK2;
         final String testMessage = "When there are multiple orders of multiple products, " +
                 "it brings the correct associations";
-        final FileCalculator fileCalculator = buildFileCalculatorForTest(testName, task);
+        final FileCalculator fileCalculator = buildFileCalculatorForTestWithProductCustomer(testName, task);
         final File expected = withTestName.apply(testName, getResult).apply(task);
         //When
         final File result = fileCalculator.calculateProductCustomers();
@@ -300,13 +300,13 @@ class FileCalculatorShould {
         return new FileCalculator(customers, products, orders, OUT_DIRECTORY);
     }
 
-    private FileCalculator buildFileCalculatorForTestWithOrderPrice(String testName, String taskName) {
+    private FileCalculator buildFileCalculatorForTestWithProductCustomer(String testName, String taskName) {
         final File customers = withTestName.apply(testName, getCustomers).apply(taskName);
         final File products = withTestName.apply(testName, getProducts).apply(taskName);
         final File orders = withTestName.apply(testName, getOrders).apply(taskName);
 
-        final OrderPriceCalculator orderPriceCalculator = new OrderPriceCalculator(products, orders, OUT_DIRECTORY);
+        final ProductCustomerCalculator productCustomerCalculator = new ProductCustomerCalculator(orders, OUT_DIRECTORY);
 
-        return new FileCalculator(customers, products, orders, OUT_DIRECTORY, orderPriceCalculator);
+        return new FileCalculator(customers, products, orders, OUT_DIRECTORY, productCustomerCalculator);
     }
 }

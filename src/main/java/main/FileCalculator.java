@@ -18,13 +18,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
-import java.util.stream.Stream;
 
 import static java.util.Arrays.asList;
 import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.counting;
 import static java.util.stream.Collectors.groupingBy;
-import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toSet;
@@ -70,20 +68,7 @@ public class FileCalculator {
     }
 
     public File calculateProductCustomers() throws IOException {
-
-        if (productCustomerCalculator == null) return _calculateProductCustomers();
-
         return productCustomerCalculator.calculateProductCustomers();
-    }
-
-    public File _calculateProductCustomers() throws IOException {
-        final String header = "id,customer_ids";
-        final String fileName = "product_customers.csv";
-
-        final Map<Long, Set<Long>> customersWhoOrderedProducts = getCustomersWhoOrderedProducts();
-        final List<List<Object>> contents = transformCustomersWhoOrderedProductsToRecords(customersWhoOrderedProducts);
-
-        return writeCsv(header, fileName, contents);
     }
 
     public File calculateCustomerRanking() throws IOException {
@@ -226,41 +211,6 @@ public class FileCalculator {
                 .collect(toSet());
     }
 
-    private Map<Long, Set<Long>> getCustomersWhoOrderedProducts() throws IOException {
-        final BufferedReader orders = new BufferedReader(new FileReader(this.orders));
-
-        final Map<Long, Set<Long>> customersWhoOrderedProduct = orders.lines()
-                .skip(1)
-                .map(FileCalculator::splitByComma)
-                //The next flat map converts each order record to a stream of pairs <Product, model.Customer> with all products in the order
-                .flatMap(splittedLine ->
-                        Stream.of(splitProducts(splittedLine))
-                                .map(
-                                        product -> Pair.of(
-                                                Long.parseLong(product),
-                                                getCustomerFromOrderRecord(splittedLine)
-                                        )
-                                )
-                                .collect(toSet())
-                                .stream()
-                )
-                .collect(
-                        toMap(
-                                Pair::getKey,
-                                pair -> Set.of(pair.getValue()),
-                                (alreadyFound, newlyFound) -> {
-                                    final Set<Long> alreadyFoundCustomers = new HashSet<>(alreadyFound);
-                                    alreadyFoundCustomers.addAll(newlyFound);
-                                    return alreadyFoundCustomers;
-                                }
-                        )
-                );
-
-        orders.close();
-
-        return customersWhoOrderedProduct;
-    }
-
     private Map<Long, Long> countProductsFromOrder(List<String> splittedOrderRecord) {
         return Arrays.stream(splitProducts(splittedOrderRecord))
                 .map(Long::parseLong)
@@ -284,26 +234,6 @@ public class FileCalculator {
         return Utils.writeCsv(header, fileName, contents, outDirectory);
     }
 
-
-    private List<List<Object>> transformCustomersWhoOrderedProductsToRecords(final Map<Long, Set<Long>> customersWhoOrderedProducts) {
-        return customersWhoOrderedProducts
-                .entrySet()
-                .stream()
-                .map(
-                        productWithCustomers ->
-                                asList(
-                                        (Object) productWithCustomers.getKey(),
-                                        productWithCustomers
-                                                .getValue()
-                                                .stream()
-                                                .map(Object::toString)
-                                                .collect(
-                                                        joining(" ")
-                                                )
-                                )
-                )
-                .collect(toList());
-    }
 
     private List<List<Object>> transformCustomerExpendingToRecords(final List<Pair<Customer, BigDecimal>> customerExpendings) {
         return customerExpendings
