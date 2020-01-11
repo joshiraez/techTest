@@ -29,6 +29,7 @@ class FileCalculatorShould {
     private final static String TASK2 = "productCustomers";
     private static final String TASK3 = "customerRanking";
     private static final String ORDER_PRICES_CSV = "order_prices.csv";
+    private static final String PRODUCT_CUSTOMER_CSV = "product_customers.csv";
 
     //Delegation
     @Test
@@ -75,12 +76,33 @@ class FileCalculatorShould {
         File customers = getResourceFileOriginal(CUSTOMERS_CSV);
         File orders = getResourceFileOriginal(ORDERS_CSV);
 
-        ProductCustomerCalculator productCustomerCalculator = mock(ProductCustomerCalculator.class);
+        ProductCustomerCalculator productCustomerCalculator = spy(new ProductCustomerCalculator(orders, OUT_DIRECTORY));
         FileCalculator fileCalculator = new FileCalculator(customers, products, orders, OUT_DIRECTORY, productCustomerCalculator);
         //When
         fileCalculator.calculateProductCustomers();
         //Then
         verify(productCustomerCalculator).calculateProductCustomers();
+    }
+
+    @Test
+    void fileCalculatorDelegationBringsExpectedProductCustomer() throws IOException {
+        //Given
+        File products = getResourceFileOriginal(PRODUCTS_CSV);
+        File customers = getResourceFileOriginal(CUSTOMERS_CSV);
+        File orders = getResourceFileOriginal(ORDERS_CSV);
+
+        File expectedOrderPrices = getResourceFileOriginal(PRODUCT_CUSTOMER_CSV);
+
+        ProductCustomerCalculator productCustomerCalculator = spy(new ProductCustomerCalculator(orders, OUT_DIRECTORY));
+        FileCalculator fileCalculator = new FileCalculator(customers, products, orders, OUT_DIRECTORY, productCustomerCalculator);
+        //When
+        final File result = fileCalculator.calculateProductCustomers();
+        //Then
+        verify(productCustomerCalculator).calculateProductCustomers();
+
+        assertThat(contentOf(result))
+                .as("Expected product customers are generated")
+                .isEqualToIgnoringNewLines(contentOf(expectedOrderPrices));
     }
 
     //Task2
