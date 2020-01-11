@@ -36,6 +36,9 @@ Things I know are improvable but didn't seem they were worth the time for the va
   * Task3 NEEDS sorting. This is already don.
   * But Task 1 by order id
   * And Task 2 by product id, and the customers by id
+* Putting the Money qtys in a "Money" class of sorts
+  * To have a single point of maintenance to all the Money functions/reducers/formatting
+  * Instead of changing every BigDecimal ocurrence.
 
 # Overview
 

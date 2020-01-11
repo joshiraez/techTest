@@ -12,6 +12,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -63,56 +64,78 @@ public class FileCalculator {
         final String header = "id,firstname,lastname,total_euros";
         final String fileName = "customer_ranking.csv";
 
-        final List<List<Object>> contents = Arrays.asList();
+        final List<Pair<Customer, BigDecimal>> customerExpendings = getCustomersTotalExpendingFromOrders();
+        final List<List<Object>> contents = transformCustomerExpendingToRecords(customerExpendings);
 
         return writeCsv(header, fileName, contents);
     }
 
-    private Map<Long, Set<Long>> getCustomersWhoOrderedProducts() throws IOException {
-        final BufferedReader orders = new BufferedReader(new FileReader(this.orders));
+    private Map<Long, BigDecimal> calculateOrderPricesContents() throws IOException {
 
-        final Map<Long, Set<Long>> customersWhoOrderedProduct = orders.lines()
+        final Map<Long, Map<Long, Long>> productsOrderedByOrderId = getProductsOrderedByOrderId();
+        final Set<Long> productsToRetrieveInfoFromOrderedProducts =
+                getProductsToRetrieveInfoFromOrderedProducts(productsOrderedByOrderId);
+        final Map<Long, BigDecimal> productPrices = getProductPrices(productsToRetrieveInfoFromOrderedProducts);
+
+        return getPriceTotals(productsOrderedByOrderId, productPrices);
+    }
+
+    private List<Pair<Customer, BigDecimal>> getCustomersTotalExpendingFromOrders() throws IOException {
+        final Map<Long, Map<Long, Long>> productsOrderedByCustomerId = getProductsOrderedByCustomerId();
+        final Set<Long> productsToRetrieveInfoFromOrderedProducts =
+                getProductsToRetrieveInfoFromOrderedProducts(productsOrderedByCustomerId);
+        final Map<Long, BigDecimal> productPrices = getProductPrices(productsToRetrieveInfoFromOrderedProducts);
+        final Map<Long, BigDecimal> priceTotalsByCustomerId = getPriceTotals(productsOrderedByCustomerId, productPrices);
+        final Map<Long, Customer> customerData = getCustomerData(productsOrderedByCustomerId.keySet());
+        final Map<Customer, BigDecimal> customerExpendings = zipById(customerData, priceTotalsByCustomerId);
+
+        return sortByValue(customerExpendings);
+    }
+
+    private Map<Long, Customer> getCustomerData(final Set<Long> customerIds) throws IOException {
+        final BufferedReader customers = new BufferedReader(new FileReader(this.customers));
+
+        final Map<Long, Customer> customerData = customers.lines()
                 .skip(1)
-                .map(line -> asList(line.split(",")))
-                //The next flat map converts each order record to a stream of pairs <Product, Customer> with all products in the order
-                .flatMap(splittedLine ->
-                        Stream.of(splittedLine
-                                .get(2)
-                                .split(" "))
-                                .map(
-                                        product -> Pair.of(Long.parseLong(product), Long.parseLong(splittedLine.get(1)))
-                                )
-                                .collect(toSet())
-                                .stream()
+                .map(FileCalculator::splitByComma)
+                .filter(splittedLine -> customerIds.contains(getRecordId(splittedLine)))
+                .map(splittedLine -> new Customer(
+                                Long.parseLong(splittedLine.get(0)),
+                                splittedLine.get(1),
+                                splittedLine.get(2)
+                        )
                 )
                 .collect(
                         toMap(
-                                Pair::getKey,
-                                pair -> Set.of(pair.getValue()),
-                                (alreadyFound, newlyFound) -> {
-                                    final Set<Long> alreadyFoundCustomers = new HashSet<>(alreadyFound);
-                                    alreadyFoundCustomers.addAll(newlyFound);
-                                    return alreadyFoundCustomers;
-                                }
+                                Customer::getId,
+                                Function.identity()
+                        )
+                );
+
+        customers.close();
+
+        return customerData;
+    }
+
+    private Map<Long, Map<Long, Long>> getProductsOrderedByCustomerId() throws IOException {
+        final BufferedReader orders = new BufferedReader(new FileReader(this.orders));
+
+        final Map<Long, Map<Long, Long>> productsOrderedByCustomer = orders.lines()
+                .skip(1)
+                .map(line -> asList(line.split(",")))
+                .collect(
+                        toMap(
+                                FileCalculator::getCustomerFromOrderRecord,
+                                this::countProductsFromOrder
                         )
                 );
 
         orders.close();
 
-        return customersWhoOrderedProduct;
+        return productsOrderedByCustomer;
     }
 
-    private Map<Long, BigDecimal> calculateOrderPricesContents() throws IOException {
-
-        final Map<Long, Map<Long, Long>> productsOrderedByOrderId = getProductsOrdered();
-        final Set<Long> productsToRetrieveInfoFromOrderedProducts =
-                getProductsToRetrieveInfoFromOrderedProducts(productsOrderedByOrderId);
-        final Map<Long, BigDecimal> productPrices = getProductPrices(productsToRetrieveInfoFromOrderedProducts);
-
-        return getPriceTotalsFromOrders(productsOrderedByOrderId, productPrices);
-    }
-
-    private Map<Long, BigDecimal> getPriceTotalsFromOrders(final Map<Long, Map<Long, Long>> productsOrderedByOrderId, final Map<Long, BigDecimal> productPrices) {
+    private Map<Long, BigDecimal> getPriceTotals(final Map<Long, Map<Long, Long>> productsOrderedByOrderId, final Map<Long, BigDecimal> productPrices) {
 
         return productsOrderedByOrderId
                 .entrySet()
@@ -142,7 +165,7 @@ public class FileCalculator {
 
         final Map<Long, BigDecimal> productPrices = products.lines()
                 .skip(1)
-                .map(line -> asList(line.split(",")))
+                .map(FileCalculator::splitByComma)
                 .filter(splittedLine ->
                         productsToRetrieveInfoFromOrderedProducts
                                 .contains(getRecordId(splittedLine)))
@@ -162,21 +185,56 @@ public class FileCalculator {
         return new BigDecimal(splittedProductRecord.get(2));
     }
 
-    private Set<Long> getProductsToRetrieveInfoFromOrderedProducts(final Map<Long, Map<Long, Long>> productsOrderedByProductId) {
-        return productsOrderedByProductId.values().stream()
+    private Set<Long> getProductsToRetrieveInfoFromOrderedProducts(final Map<Long, Map<Long, Long>> productsOrderedById) {
+        return productsOrderedById.values().stream()
                 .map(Map::keySet)
                 .flatMap(Set::stream)
                 .collect(toSet());
     }
 
-    //List of pais orderId to itemsOrdered
+    private Map<Long, Set<Long>> getCustomersWhoOrderedProducts() throws IOException {
+        final BufferedReader orders = new BufferedReader(new FileReader(this.orders));
 
-    private Map<Long, Map<Long, Long>> getProductsOrdered() throws IOException {
+        final Map<Long, Set<Long>> customersWhoOrderedProduct = orders.lines()
+                .skip(1)
+                .map(FileCalculator::splitByComma)
+                //The next flat map converts each order record to a stream of pairs <Product, Customer> with all products in the order
+                .flatMap(splittedLine ->
+                        Stream.of(splitProducts(splittedLine))
+                                .map(
+                                        product -> Pair.of(
+                                                Long.parseLong(product),
+                                                getCustomerFromOrderRecord(splittedLine)
+                                        )
+                                )
+                                .collect(toSet())
+                                .stream()
+                )
+                .collect(
+                        toMap(
+                                Pair::getKey,
+                                pair -> Set.of(pair.getValue()),
+                                (alreadyFound, newlyFound) -> {
+                                    final Set<Long> alreadyFoundCustomers = new HashSet<>(alreadyFound);
+                                    alreadyFoundCustomers.addAll(newlyFound);
+                                    return alreadyFoundCustomers;
+                                }
+                        )
+                );
+
+        orders.close();
+
+        return customersWhoOrderedProduct;
+    }
+
+    //List of orderId to itemsOrdered
+
+    private Map<Long, Map<Long, Long>> getProductsOrderedByOrderId() throws IOException {
         final BufferedReader orders = new BufferedReader(new FileReader(this.orders));
 
         final Map<Long, Map<Long, Long>> productsOrderedByOrderId = orders.lines()
                 .skip(1)
-                .map(line -> asList(line.split(",")))
+                .map(FileCalculator::splitByComma)
                 .collect(
                         toMap(
                                 this::getRecordId,
@@ -188,9 +246,8 @@ public class FileCalculator {
 
         return productsOrderedByOrderId;
     }
-
     private Map<Long, Long> countProductsFromOrder(List<String> splittedOrderRecord) {
-        return Arrays.stream(splittedOrderRecord.get(2).split(" "))
+        return Arrays.stream(splitProducts(splittedOrderRecord))
                 .map(Long::parseLong)
                 .collect(
                         groupingBy(
@@ -198,6 +255,10 @@ public class FileCalculator {
                                 counting()
                         )
                 );
+    }
+
+    private String[] splitProducts(final List<String> splittedOrderRecord) {
+        return splittedOrderRecord.get(2).split(" ");
     }
 
     private Long getRecordId(List<String> splittedOrderRecord) {
@@ -259,5 +320,53 @@ public class FileCalculator {
                                 )
                 )
                 .collect(toList());
+    }
+
+    private List<List<Object>> transformCustomerExpendingToRecords(final List<Pair<Customer, BigDecimal>> customerExpendings) {
+        return customerExpendings
+                .stream()
+                .map(
+                        expendings -> asList(
+                                (Object) expendings.getKey().getId(),
+                                expendings.getKey().getFirstName(),
+                                expendings.getKey().getLastName(),
+                                expendings.getValue()
+                        )
+                )
+                .collect(toList());
+    }
+
+    private static Long getCustomerFromOrderRecord(List<String> splittedLine) {
+        return Long.parseLong(splittedLine.get(1));
+    }
+
+
+    private static List<String> splitByComma(String line) {
+        return asList(line.split(","));
+    }
+
+
+    private <T, U extends Comparable<U>> List<Pair<T, U>> sortByValue(final Map<T, U> mapToSortByValue) {
+        return mapToSortByValue.entrySet()
+                .stream()
+                .map(
+                        entry -> Pair.of(
+                                entry.getKey(),
+                                entry.getValue()
+                        )
+                )
+                .sorted((a, b) -> -a.getValue().compareTo(b.getValue()))
+                .collect(toList());
+    }
+
+    private <T, U> Map<T, U> zipById(final Map<Long, T> keyMap, final Map<Long, U> valueMap) {
+        return keyMap.entrySet()
+                .stream()
+                .collect(
+                        toMap(
+                                Map.Entry::getValue,
+                                entry -> valueMap.get(entry.getKey())
+                        )
+                );
     }
 }
