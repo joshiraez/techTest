@@ -1,3 +1,5 @@
+import org.apache.commons.lang3.tuple.Pair;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -6,15 +8,18 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static java.util.Arrays.asList;
 import static java.util.function.Function.identity;
 import static java.util.stream.Collectors.counting;
 import static java.util.stream.Collectors.groupingBy;
+import static java.util.stream.Collectors.joining;
 import static java.util.stream.Collectors.toList;
 import static java.util.stream.Collectors.toMap;
 import static java.util.stream.Collectors.toSet;
@@ -48,30 +53,45 @@ public class FileCalculator {
         final String header = "id,customer_ids";
         final String fileName = "product_customers.csv";
 
-//        final Map<Long, List<Long>> customersWhoOrderedProducts = getCustomersWhoOrderedProducts();
-//        final List<List<Object>> contents = transformCustomersWhoOrderedProductsToRecords(customersWhoOrderedProducts);
-//
-        return writeCsv(header, fileName, Arrays.asList());
+        final Map<Long, Set<Long>> customersWhoOrderedProducts = getCustomersWhoOrderedProducts();
+        final List<List<Object>> contents = transformCustomersWhoOrderedProductsToRecords(customersWhoOrderedProducts);
+
+        return writeCsv(header, fileName, contents);
     }
 
-//    private Map<Long, List<Long>> getCustomersWhoOrderedProducts() throws IOException {
-//        final BufferedReader orders = new BufferedReader(new FileReader(this.orders));
-//
-//        orders.lines()
-//                .skip(1)
-//                .map(line -> asList(line.split(",")))
-//                .map(splittedLine)
-//                .collect(
-//                        toMap(
-//                                this::getRecordId,
-//                                this::countProductsFromOrder
-//                        )
-//                );
-//
-//        orders.close();
-//
-//        return null;
-//    }
+    private Map<Long, Set<Long>> getCustomersWhoOrderedProducts() throws IOException {
+        final BufferedReader orders = new BufferedReader(new FileReader(this.orders));
+
+        final Map<Long, Set<Long>> customersWhoOrderedProduct = orders.lines()
+                .skip(1)
+                .map(line -> asList(line.split(",")))
+                //The next flat map converts each order record to a stream of pairs <Product, Customer> with all products in the order
+                .flatMap(splittedLine ->
+                        Stream.of(splittedLine
+                                .get(2)
+                                .split(" "))
+                                .map(
+                                        product -> Pair.of(Long.parseLong(product), Long.parseLong(splittedLine.get(1)))
+                                )
+                                .collect(toSet())
+                                .stream()
+                )
+                .collect(
+                        toMap(
+                                Pair::getKey,
+                                pair -> Set.of(pair.getValue()),
+                                (alreadyFound, newlyFound) -> {
+                                    final Set<Long> alreadyFoundCustomers = new HashSet<>(alreadyFound);
+                                    alreadyFoundCustomers.addAll(newlyFound);
+                                    return alreadyFoundCustomers;
+                                }
+                        )
+                );
+
+        orders.close();
+
+        return customersWhoOrderedProduct;
+    }
 
     private Map<Long, BigDecimal> calculateOrderPricesContents() throws IOException {
 
@@ -141,6 +161,7 @@ public class FileCalculator {
     }
 
     //List of pais orderId to itemsOrdered
+
     private Map<Long, Map<Long, Long>> getProductsOrdered() throws IOException {
         final BufferedReader orders = new BufferedReader(new FileReader(this.orders));
 
@@ -207,6 +228,26 @@ public class FileCalculator {
                                 (Object) order.getKey(),
                                 order.getValue()
                         )
+                )
+                .collect(toList());
+    }
+
+    private List<List<Object>> transformCustomersWhoOrderedProductsToRecords(final Map<Long, Set<Long>> customersWhoOrderedProducts) {
+        return customersWhoOrderedProducts
+                .entrySet()
+                .stream()
+                .map(
+                        productWithCustomers ->
+                                asList(
+                                        (Object) productWithCustomers.getKey(),
+                                        productWithCustomers
+                                                .getValue()
+                                                .stream()
+                                                .map(Object::toString)
+                                                .collect(
+                                                        joining(" ")
+                                                )
+                                )
                 )
                 .collect(toList());
     }
