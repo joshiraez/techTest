@@ -20,6 +20,9 @@ To run, cd to project root, then:
     * Another optimization would be to have any of these two restrictions on the CSV: be indexed, or restricted to not be able to erase records (so all ids are in order and place). Then we could do Random memory access to the files and it could be much quicker
       * But right now, I settled for this. Those are nice to have in mind if we found performance problems in the future.
 * Using BigDecimal for precision decimal operations. Is much slower than just double types, it depends on the size of the files we will use.
+* Many corner cases were not tested. For example: same product. Products not existing... Because they either were irrecoverable or it was very strange they could bug from the code logic.
+  * Too many tests to maximixe coverage can get unmaintenable for almost no value (very strange cases).
+  * If those corner cases bugged sometime, then we could make a test for that bug in particular.
 
 ## Backlog decisions
 
@@ -29,6 +32,10 @@ Things I know are improvable but didn't seem they were worth the time for the va
   * These are unrecoverable failures, so there is no great value on having them controlled at first.
 * FileCalculator test class can be parameterized in a Data Driven Testing style
 * Each file generation can be separated to a new class, because they will be maintained in its own.
+* Sorting the different data structures to ids, in those where it was not specifically required
+  * Task3 NEEDS sorting. This is already don.
+  * But Task 1 by order id
+  * And Task 2 by product id, and the customers by id
 
 # Overview
 
