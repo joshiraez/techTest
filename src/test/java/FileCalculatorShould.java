@@ -229,6 +229,23 @@ class FileCalculatorShould {
                 .isEqualToIgnoringNewLines(contentOf(expected));
     }
 
+    @Test
+    void whenThereAreMultipleOrderFromMultiplePeopleItGetsItsExpendingTotalsRightAndOrdersThemDescending() throws IOException {
+        //Given
+        final String testName = "whenThereAreMultipleOrderFromMultiplePeopleItGetsItsExpendingTotalsRightAndOrdersThemDescending";
+        final String task = TASK3;
+        final String testMessage = "When there orders from different customers, it sets the total for each customer and ranks them in descending expendings";
+        final FileCalculator fileCalculator = buildFileCalculatorForTest(testName, task);
+        final File expected = withTestName.apply(testName, getResult).apply(task);
+        //When
+        final File result = fileCalculator.calculateCustomerRanking();
+        //Then
+        assertThat(result).exists();
+        assertThat(contentOf(result))
+                .as(testMessage)
+                .isEqualToIgnoringNewLines(contentOf(expected));
+    }
+
     //Helper methods and closures to reduce boilerplate to get the files
     private File getResourceFile(final String task, final String testName, final String fileName) {
 
