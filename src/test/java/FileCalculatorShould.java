@@ -64,7 +64,7 @@ class FileCalculatorShould {
         //Then
         assertThat(result).exists();
         assertThat(contentOf(result))
-                .as("When only one order with one product, it should bring the price of the product")
+                .as("When only one order but with multiple products, it should bring the sum of the prices")
                 .isEqualToIgnoringNewLines(contentOf(expected));
 
     }
@@ -80,7 +80,7 @@ class FileCalculatorShould {
         //Then
         assertThat(result).exists();
         assertThat(contentOf(result))
-                .as("When only one order with one product, it should bring the price of the product")
+                .as("It calculates order prices correctly with multiple orders")
                 .isEqualToIgnoringNewLines(contentOf(expected));
 
     }
