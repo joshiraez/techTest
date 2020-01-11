@@ -1,4 +1,6 @@
+import calculators.OrderPriceCalculator;
 import org.apache.commons.lang3.tuple.Pair;
+import utils.Utils;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -50,19 +52,7 @@ public class FileCalculator {
 
     public File calculateOrderPrices() throws IOException {
 
-        if (orderPriceCalculator == null) return _orderPriceCalculator();
-
         return orderPriceCalculator.calculateOrderPrices();
-    }
-
-    private File _orderPriceCalculator() throws IOException {
-        final String header = "id,euros";
-        final String fileName = "order_prices.csv";
-
-        final Map<Long, BigDecimal> orderPrices = calculateOrderPricesContents();
-        final List<List<Object>> contents = transformOrderPricesToRecords(orderPrices);
-
-        return writeCsv(header, fileName, contents);
     }
 
     public File calculateProductCustomers() throws IOException {
@@ -83,16 +73,6 @@ public class FileCalculator {
         final List<List<Object>> contents = transformCustomerExpendingToRecords(customerExpendings);
 
         return writeCsv(header, fileName, contents);
-    }
-
-    private Map<Long, BigDecimal> calculateOrderPricesContents() throws IOException {
-
-        final Map<Long, Map<Long, Long>> productsOrderedByOrderId = getProductsOrderedByOrderId();
-        final Set<Long> productsToRetrieveInfoFromOrderedProducts =
-                getProductsToRetrieveInfoFromOrderedProducts(productsOrderedByOrderId);
-        final Map<Long, BigDecimal> productPrices = getProductPrices(productsToRetrieveInfoFromOrderedProducts);
-
-        return getPriceTotals(productsOrderedByOrderId, productPrices);
     }
 
     private List<Pair<Customer, BigDecimal>> getCustomersTotalExpendingFromOrders() throws IOException {
@@ -260,25 +240,6 @@ public class FileCalculator {
         return customersWhoOrderedProduct;
     }
 
-    //List of orderId to itemsOrdered
-    private Map<Long, Map<Long, Long>> getProductsOrderedByOrderId() throws IOException {
-        final BufferedReader orders = new BufferedReader(new FileReader(this.orders));
-
-        final Map<Long, Map<Long, Long>> productsOrderedByOrderId = orders.lines()
-                .skip(1)
-                .map(FileCalculator::splitByComma)
-                .collect(
-                        toMap(
-                                this::getRecordId,
-                                this::countProductsFromOrder
-                        )
-                );
-
-        orders.close();
-
-        return productsOrderedByOrderId;
-    }
-
     private Map<Long, Long> countProductsFromOrder(List<String> splittedOrderRecord) {
         return Arrays.stream(splitProducts(splittedOrderRecord))
                 .map(Long::parseLong)
@@ -302,20 +263,6 @@ public class FileCalculator {
         return Utils.writeCsv(header, fileName, contents, outDirectory);
     }
 
-
-    private List<List<Object>> transformOrderPricesToRecords(final Map<Long, BigDecimal> orderPrices) {
-        return orderPrices
-                .entrySet()
-                .stream()
-                .map(
-                        order -> asList(
-                                //Below cast needed because if not stream casts to a weird interface
-                                (Object) order.getKey(),
-                                order.getValue()
-                        )
-                )
-                .collect(toList());
-    }
 
     private List<List<Object>> transformCustomersWhoOrderedProductsToRecords(final Map<Long, Set<Long>> customersWhoOrderedProducts) {
         return customersWhoOrderedProducts

@@ -1,3 +1,4 @@
+import calculators.OrderPriceCalculator;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -70,7 +71,7 @@ class FileCalculatorShould {
     void whenThereAreNoOrdersOrderPricesWillHaveNoOrders() throws IOException {
         //Given
         final String testName = "whenThereAreNoOrdersOrderPricesWillHaveNoOrders";
-        final FileCalculator fileCalculator = buildFileCalculatorForTest(testName, TASK1);
+        final FileCalculator fileCalculator = buildFileCalculatorForTestWithOrderPrice(testName, TASK1);
         final File expected = withTestName.apply(testName, getResult).apply(TASK1);
         //When
         final File result = fileCalculator.calculateOrderPrices();
@@ -85,7 +86,7 @@ class FileCalculatorShould {
     void whenThereAreOneOrderWithOneItemGetThePriceOfThatItem() throws IOException {
         //Given
         final String testName = "whenThereAreOneOrderWithOneItemGetThePriceOfThatItem";
-        final FileCalculator fileCalculator = buildFileCalculatorForTest(testName, TASK1);
+        final FileCalculator fileCalculator = buildFileCalculatorForTestWithOrderPrice(testName, TASK1);
         final File expected = withTestName.apply(testName, getResult).apply(TASK1);
         //When
         final File result = fileCalculator.calculateOrderPrices();
@@ -101,7 +102,7 @@ class FileCalculatorShould {
     void whenThereIsOneOrderWithMultipleProductsThePriceShouldBeTheSumOfPrices() throws IOException {
         //Given
         final String testName = "whenThereIsOneOrderWithMultipleProductsThePriceShouldBeTheSumOfPrices";
-        final FileCalculator fileCalculator = buildFileCalculatorForTest(testName, TASK1);
+        final FileCalculator fileCalculator = buildFileCalculatorForTestWithOrderPrice(testName, TASK1);
         final File expected = withTestName.apply(testName, getResult).apply(TASK1);
         //When
         final File result = fileCalculator.calculateOrderPrices();
@@ -117,7 +118,7 @@ class FileCalculatorShould {
     void whenThereIsMultipleOrdersYouGetTheSumPriceOfItsProductsForEachOrder() throws IOException {
         //Given
         final String testName = "whenThereIsMultipleOrdersYouGetTheSumPriceOfItsProductsForEachOrder";
-        final FileCalculator fileCalculator = buildFileCalculatorForTest(testName, TASK1);
+        final FileCalculator fileCalculator = buildFileCalculatorForTestWithOrderPrice(testName, TASK1);
         final File expected = withTestName.apply(testName, getResult).apply(TASK1);
         //When
         final File result = fileCalculator.calculateOrderPrices();
@@ -322,5 +323,15 @@ class FileCalculatorShould {
         final File orders = withTestName.apply(testName, getOrders).apply(taskName);
 
         return new FileCalculator(customers, products, orders, OUT_DIRECTORY);
+    }
+
+    private FileCalculator buildFileCalculatorForTestWithOrderPrice(String testName, String taskName) {
+        final File customers = withTestName.apply(testName, getCustomers).apply(taskName);
+        final File products = withTestName.apply(testName, getProducts).apply(taskName);
+        final File orders = withTestName.apply(testName, getOrders).apply(taskName);
+
+        final OrderPriceCalculator orderPriceCalculator = new OrderPriceCalculator(products, orders, OUT_DIRECTORY);
+
+        return new FileCalculator(customers, products, orders, OUT_DIRECTORY, orderPriceCalculator);
     }
 }
