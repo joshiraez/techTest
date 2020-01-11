@@ -1,6 +1,7 @@
 package calculators;
 
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.io.File;
 import java.io.IOException;
@@ -19,89 +20,23 @@ class ProductCustomerCalculatorShould {
 
     private static final String TASK = "productCustomers";
 
-    //Task2
-    @Test
-    void whenThereAreNoOrdersYouGetAProductCustomersFileWithNoRecords() throws IOException {
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "whenThereAreNoOrdersYouGetAProductCustomersFileWithNoRecords",
+            "whenThereIsAnOrderWithASingleProductReturnThatProductAssociatedToTheCustomer",
+            "whenThereIsAnOrderWithMultipleProductReturnThoseProductAssociatedToTheCustomer",
+            "whenThereIsMultipleOrdersWithTheSameProductReturnThatProductAssociatedToTheCustomers",
+            "whenThereAreMultipleOrdersWithMultipleProductsItBringsTheCorrectAssociations"
+    })
+    void productCustomerCalculatorBringsExpectedResult(String testCase) throws IOException {
         //Given
-        final String testName = "whenThereAreNoOrdersYouGetAProductCustomersFileWithNoRecords";
-        final String testMessage = "When there are no orders, it brings a record empty product customers file";
-        final ProductCustomerCalculator productCustomerCalculator = buildProductCustomerCalculator(testName);
-        final File expected = getExpected(testName);
+        final ProductCustomerCalculator productCustomerCalculator = buildProductCustomerCalculator(testCase);
+        final File expected = getExpected(testCase);
         //When
         final File result = productCustomerCalculator.calculateProductCustomers();
         //Then
         assertThat(result).exists();
         assertThat(contentOf(result))
-                .as(testMessage)
-                .isEqualToIgnoringNewLines(contentOf(expected));
-    }
-
-
-    @Test
-    void whenThereIsAnOrderWithASingleProductReturnThatProductAssociatedToTheCustomer() throws IOException {
-        //Given
-        final String testName = "whenThereIsAnOrderWithASingleProductReturnThatProductAssociatedToTheCustomer";
-        final String testMessage = "When there is a single order with a single product, " +
-                "it brings a record associating the product with the customer of the order";
-        final ProductCustomerCalculator productCustomerCalculator = buildProductCustomerCalculator(testName);
-        final File expected = getExpected(testName);
-        //When
-        final File result = productCustomerCalculator.calculateProductCustomers();
-        //Then
-        assertThat(result).exists();
-        assertThat(contentOf(result))
-                .as(testMessage)
-                .isEqualToIgnoringNewLines(contentOf(expected));
-    }
-
-    @Test
-    void whenThereIsAnOrderWithMultipleProductReturnThoseProductAssociatedToTheCustomer() throws IOException {
-        //Given
-        final String testName = "whenThereIsAnOrderWithMultipleProductReturnThoseProductAssociatedToTheCustomer";
-        final String testMessage = "When there is a single order with multiple products, " +
-                "it brings a record associating all the products with the customer of the order";
-        final ProductCustomerCalculator productCustomerCalculator = buildProductCustomerCalculator(testName);
-        final File expected = getExpected(testName);
-        //When
-        final File result = productCustomerCalculator.calculateProductCustomers();
-        //Then
-        assertThat(result).exists();
-        assertThat(contentOf(result))
-                .as(testMessage)
-                .isEqualToIgnoringNewLines(contentOf(expected));
-    }
-
-    @Test
-    void whenThereIsMultipleOrdersWithTheSameProductReturnThatProductAssociatedToTheCustomers() throws IOException {
-        //Given
-        final String testName = "whenThereIsMultipleOrdersWithTheSameProductReturnThatProductAssociatedToTheCustomers";
-        final String testMessage = "When there are multiple orders of the same product, " +
-                "it brings a record associating all the products with the customer of the order";
-        final ProductCustomerCalculator productCustomerCalculator = buildProductCustomerCalculator(testName);
-        final File expected = getExpected(testName);
-        //When
-        final File result = productCustomerCalculator.calculateProductCustomers();
-        //Then
-        assertThat(result).exists();
-        assertThat(contentOf(result))
-                .as(testMessage)
-                .isEqualToIgnoringNewLines(contentOf(expected));
-    }
-
-    @Test
-    void whenThereAreMultipleOrdersWithMultipleProductsItBringsTheCorrectAssociations() throws IOException {
-        //Given
-        final String testName = "whenThereAreMultipleOrdersWithMultipleProductsItBringsTheCorrectAssociations";
-        final String testMessage = "When there are multiple orders of multiple products, " +
-                "it brings the correct associations";
-        final ProductCustomerCalculator productCustomerCalculator = buildProductCustomerCalculator(testName);
-        final File expected = getExpected(testName);
-        //When
-        final File result = productCustomerCalculator.calculateProductCustomers();
-        //Then
-        assertThat(result).exists();
-        assertThat(contentOf(result))
-                .as(testMessage)
                 .isEqualToIgnoringNewLines(contentOf(expected));
     }
 
