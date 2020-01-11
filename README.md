@@ -14,6 +14,9 @@ To run, cd to project root, then:
 
 ## Design decisions
 
+* TODO: Decided to leave the error handling and file validation after having the 3 tasks finished.
+* Using BigDecimal for precision decimal operations. Is much slower than just double types, it depends on the size of the files we will use.
+
 
 # Overview
 

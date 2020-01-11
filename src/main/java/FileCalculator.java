@@ -3,6 +3,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
@@ -47,12 +48,12 @@ public class FileCalculator {
         final Map<Long, Map<Long, Long>> productsOrderedByOrderId = getProductsOrdered();
         final Set<Long> productsToRetrieveInfoFromOrderedProducts =
                 getProductsToRetrieveInfoFromOrderedProducts(productsOrderedByOrderId);
-        final Map<Long, Double> productPrices = getProductPrices(productsToRetrieveInfoFromOrderedProducts);
+        final Map<Long, BigDecimal> productPrices = getProductPrices(productsToRetrieveInfoFromOrderedProducts);
 
         return getPriceTotalsFromOrders(productsOrderedByOrderId, productPrices);
     }
 
-    private List<List<Object>> getPriceTotalsFromOrders(final Map<Long, Map<Long, Long>> productsOrderedByOrderId, final Map<Long, Double> productPrices) {
+    private List<List<Object>> getPriceTotalsFromOrders(final Map<Long, Map<Long, Long>> productsOrderedByOrderId, final Map<Long, BigDecimal> productPrices) {
 
         return productsOrderedByOrderId
                 .entrySet()
@@ -66,21 +67,22 @@ public class FileCalculator {
                 .collect(toList());
     }
 
-    private Double calculateOrderTotal(final Map<Long, Long> orderedProducts, final Map<Long, Double> productPrices) {
+    private BigDecimal calculateOrderTotal(final Map<Long, Long> orderedProducts, final Map<Long, BigDecimal> productPrices) {
         return orderedProducts
                 .entrySet()
                 .stream()
-                .mapToDouble(
+                .map(
                         orderedProduct ->
-                                productPrices.get(orderedProduct.getKey()) * orderedProduct.getValue()
+                                productPrices.get(orderedProduct.getKey()).multiply(BigDecimal.valueOf(orderedProduct.getValue()))
                 )
-                .sum();
+                .reduce(BigDecimal::add)
+                .orElse(BigDecimal.ZERO);
     }
 
-    private Map<Long, Double> getProductPrices(final Set<Long> productsToRetrieveInfoFromOrderedProducts) throws IOException {
+    private Map<Long, BigDecimal> getProductPrices(final Set<Long> productsToRetrieveInfoFromOrderedProducts) throws IOException {
         final BufferedReader products = new BufferedReader(new FileReader(this.products));
 
-        final Map<Long, Double> productPrices = products.lines()
+        final Map<Long, BigDecimal> productPrices = products.lines()
                 .skip(1)
                 .map(line -> asList(line.split(",")))
                 .filter(splittedLine ->
@@ -98,8 +100,8 @@ public class FileCalculator {
         return productPrices;
     }
 
-    private double getProductPrice(List<String> splittedProductRecord) {
-        return Double.parseDouble(splittedProductRecord.get(2));
+    private BigDecimal getProductPrice(List<String> splittedProductRecord) {
+        return new BigDecimal(splittedProductRecord.get(2));
     }
 
     private Set<Long> getProductsToRetrieveInfoFromOrderedProducts(final Map<Long, Map<Long, Long>> productsOrderedByProductId) {

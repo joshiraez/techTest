@@ -52,6 +52,22 @@ class FileCalculatorShould {
 
     }
 
+    @Test
+    void whenThereIsOneOrderWithMultipleProductsThePriceShouldBeTheSumOfPrices() throws IOException {
+        //Given
+        final String testName = "whenThereIsOneOrderWithMultipleProductsThePriceShouldBeTheSumOfPrices";
+        final FileCalculator fileCalculator = buildFileCalculatorForTest(testName, TASK1);
+        final File expected = withTestName.apply(testName, getResult).apply(TASK1);
+        //When
+        final File result = fileCalculator.calculateOrderPrices();
+        //Then
+        assertThat(result).exists();
+        assertThat(contentOf(result))
+                .as("When only one order with one product, it should bring the price of the product")
+                .isEqualToNormalizingNewlines(contentOf(expected));
+
+    }
+
     //Helper methods and closures to reduce boilerplate to get the files
     private File getResourceFile(final String task, final String testName, final String fileName) {
 
