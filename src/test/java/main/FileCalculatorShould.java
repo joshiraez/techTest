@@ -1,5 +1,6 @@
 package main;
 
+import calculators.CustomerRankingCalculator;
 import calculators.OrderPriceCalculator;
 import calculators.ProductCustomerCalculator;
 import org.junit.jupiter.api.Test;
@@ -103,6 +104,21 @@ class FileCalculatorShould {
         assertThat(contentOf(result))
                 .as("Expected product customers are generated")
                 .isEqualToIgnoringNewLines(contentOf(expectedOrderPrices));
+    }
+
+    @Test
+    void fileCalculatorDelegatesToCustomerRankingCalculatortheCustomerRankingFile() throws IOException {
+        //Given
+        File products = getResourceFileOriginal(PRODUCTS_CSV);
+        File customers = getResourceFileOriginal(CUSTOMERS_CSV);
+        File orders = getResourceFileOriginal(ORDERS_CSV);
+
+        CustomerRankingCalculator customerRankingCalculator = mock(CustomerRankingCalculator.class);
+        FileCalculator fileCalculator = new FileCalculator(customers, products, orders, OUT_DIRECTORY, customerRankingCalculator);
+        //When
+        fileCalculator.calculateCustomerRanking();
+        //Then
+        verify(customerRankingCalculator).calculateCustomerRanking();
     }
 
     //Task3

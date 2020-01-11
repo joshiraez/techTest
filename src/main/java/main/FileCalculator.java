@@ -1,5 +1,6 @@
 package main;
 
+import calculators.CustomerRankingCalculator;
 import calculators.OrderPriceCalculator;
 import calculators.ProductCustomerCalculator;
 import model.Customer;
@@ -33,6 +34,7 @@ public class FileCalculator {
     private final File products;
     private final File orders;
     private final Path outDirectory;
+    private CustomerRankingCalculator customerRankingCalculator;
     private ProductCustomerCalculator productCustomerCalculator;
     private OrderPriceCalculator orderPriceCalculator;
 
@@ -62,6 +64,15 @@ public class FileCalculator {
         this.productCustomerCalculator = productCustomerCalculator;
     }
 
+    public FileCalculator(final File customers, final File products, final File orders, final Path outDirectory, final calculators.CustomerRankingCalculator customerRankingCalculator) {
+
+        this.customers = customers;
+        this.products = products;
+        this.orders = orders;
+        this.outDirectory = outDirectory;
+        this.customerRankingCalculator = customerRankingCalculator;
+    }
+
     public File calculateOrderPrices() throws IOException {
 
         return orderPriceCalculator.calculateOrderPrices();
@@ -72,6 +83,13 @@ public class FileCalculator {
     }
 
     public File calculateCustomerRanking() throws IOException {
+
+        if (customerRankingCalculator == null) return _calculateCustomerRanking();
+
+        return customerRankingCalculator.calculateCustomerRanking();
+    }
+
+    public File _calculateCustomerRanking() throws IOException {
         final String header = "id,firstname,lastname,total_euros";
         final String fileName = "customer_ranking.csv";
 
