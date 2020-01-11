@@ -1,6 +1,7 @@
 package calculators;
 
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.io.File;
 import java.io.IOException;
@@ -21,68 +22,22 @@ class CustomerRankingCalculatorShould {
 
     private final static Path OUT_DIRECTORY = Paths.get(".");
 
-
-    @Test
-    void whenThereAreNoOrdersTheCustomerRankingWillHaveNoRecords() throws IOException {
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "whenThereAreNoOrdersTheCustomerRankingWillHaveNoRecords",
+            "whenThereIsASingleOrderCustomerRankingWillBringThatCustomerWithOrderPrice",
+            "whenThereAreMultipleOrdersForTheSameCustomerItWillBringTheSumOfTheOrderCostsForTheCustomer",
+            "whenThereAreMultipleOrderFromMultiplePeopleItGetsItsExpendingTotalsRightAndOrdersThemDescending"
+    })
+    void customerRankingCalculatorBringsExpectedResult(String testCase) throws IOException {
         //Given
-        final String testName = "whenThereAreNoOrdersTheCustomerRankingWillHaveNoRecords";
-        final String testMessage = "When there are no orders, it brings a record empty customer ranking file";
-        final CustomerRankingCalculator customerRankingCalculator = buildCalculator(testName);
-        final File expected = getExpected(testName);
+        final CustomerRankingCalculator customerRankingCalculator = buildCalculator(testCase);
+        final File expected = getExpected(testCase);
         //When
         final File result = customerRankingCalculator.calculateCustomerRanking();
         //Then
         assertThat(result).exists();
         assertThat(contentOf(result))
-                .as(testMessage)
-                .isEqualToIgnoringNewLines(contentOf(expected));
-    }
-
-    @Test
-    void whenThereIsASingleOrderCustomerRankingWillBringThatCustomerWithOrderPrice() throws IOException {
-        //Given
-        final String testName = "whenThereIsASingleOrderCustomerRankingWillBringThatCustomerWithOrderPrice";
-        final String testMessage = "When there is a single order, it brings the customer with the order total";
-        final CustomerRankingCalculator customerRankingCalculator = buildCalculator(testName);
-        final File expected = getExpected(testName);
-        //When
-        final File result = customerRankingCalculator.calculateCustomerRanking();
-        //Then
-        assertThat(result).exists();
-        assertThat(contentOf(result))
-                .as(testMessage)
-                .isEqualToIgnoringNewLines(contentOf(expected));
-    }
-
-    @Test
-    void whenThereAreMultipleOrdersForTheSameCustomerItWillBringTheSumOfTheOrderCostsForTheCustomer() throws IOException {
-        //Given
-        final String testName = "whenThereAreMultipleOrdersForTheSameCustomerItWillBringTheSumOfTheOrderCostsForTheCustomer";
-        final String testMessage = "When there many orders for the same customer, it brings the customer with the total of the orders";
-        final CustomerRankingCalculator customerRankingCalculator = buildCalculator(testName);
-        final File expected = getExpected(testName);
-        //When
-        final File result = customerRankingCalculator.calculateCustomerRanking();
-        //Then
-        assertThat(result).exists();
-        assertThat(contentOf(result))
-                .as(testMessage)
-                .isEqualToIgnoringNewLines(contentOf(expected));
-    }
-
-    @Test
-    void whenThereAreMultipleOrderFromMultiplePeopleItGetsItsExpendingTotalsRightAndOrdersThemDescending() throws IOException {
-        //Given
-        final String testName = "whenThereAreMultipleOrderFromMultiplePeopleItGetsItsExpendingTotalsRightAndOrdersThemDescending";
-        final String testMessage = "When there orders from different customers, it sets the total for each customer and ranks them in descending expendings";
-        final CustomerRankingCalculator customerRankingCalculator = buildCalculator(testName);
-        final File expected = getExpected(testName);
-        //When
-        final File result = customerRankingCalculator.calculateCustomerRanking();
-        //Then
-        assertThat(result).exists();
-        assertThat(contentOf(result))
-                .as(testMessage)
                 .isEqualToIgnoringNewLines(contentOf(expected));
     }
 
