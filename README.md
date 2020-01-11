@@ -38,6 +38,7 @@ Things I know are improvable but didn't seem they were worth the time for the va
 * Putting the Money qtys in a "Money" class of sorts
   * To have a single point of maintenance to all the Money functions/reducers/formatting
   * Instead of changing every BigDecimal ocurrence.
+* Put the data extractors of the files in another class. I didn't do it yet because is not huge enough to bring much value.
 
 # Overview
 
