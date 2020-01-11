@@ -1,5 +1,6 @@
+package main;
+
 import calculators.OrderPriceCalculator;
-import main.FileCalculator;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -67,7 +68,7 @@ class FileCalculatorShould {
 
     }
 
-    //Task 1. Those can be parameterized
+    //Those can be parameterized
     @Test
     void whenThereAreNoOrdersOrderPricesWillHaveNoOrders() throws IOException {
         //Given
@@ -293,14 +294,14 @@ class FileCalculatorShould {
     //Helper methods and closures to reduce boilerplate to get the files
     private File getResourceFile(final String task, final String testName, final String fileName) {
 
-        final String pathToFile = task + "/" + testName + "/" + fileName;
+        final String pathToFile = "/" + task + "/" + testName + "/" + fileName;
 
         return new File(getClass().getResource(pathToFile).getFile());
     }
 
     private File getResourceFileOriginal(final String fileName) {
 
-        final String pathToFile = "originals/" + fileName;
+        final String pathToFile = "/originals/" + fileName;
 
         return new File(getClass().getResource(pathToFile).getFile());
     }
