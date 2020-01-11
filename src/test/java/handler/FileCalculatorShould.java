@@ -1,4 +1,4 @@
-package main;
+package handler;
 
 import calculators.CustomerRankingCalculator;
 import calculators.OrderPriceCalculator;

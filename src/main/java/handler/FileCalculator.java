@@ -1,4 +1,4 @@
-package main;
+package handler;
 
 import calculators.CustomerRankingCalculator;
 import calculators.OrderPriceCalculator;
@@ -10,10 +10,10 @@ import java.nio.file.Path;
 
 public class FileCalculator {
 
-    private final File customers;
-    private final File products;
-    private final File orders;
-    private final Path outDirectory;
+    private File customers;
+    private File products;
+    private File orders;
+    private Path outDirectory;
     private CustomerRankingCalculator customerRankingCalculator;
     private ProductCustomerCalculator productCustomerCalculator;
     private OrderPriceCalculator orderPriceCalculator;
@@ -50,6 +50,13 @@ public class FileCalculator {
         this.products = products;
         this.orders = orders;
         this.outDirectory = outDirectory;
+        this.customerRankingCalculator = customerRankingCalculator;
+    }
+
+    public FileCalculator(final OrderPriceCalculator orderPriceCalculator, final ProductCustomerCalculator productCustomerCalculator, final CustomerRankingCalculator customerRankingCalculator) {
+
+        this.orderPriceCalculator = orderPriceCalculator;
+        this.productCustomerCalculator = productCustomerCalculator;
         this.customerRankingCalculator = customerRankingCalculator;
     }
 
