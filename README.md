@@ -12,6 +12,9 @@ To run, cd to project root, then:
 * `gradlew build`
 * `java -jar build/libs/interview-1.0-SNAPSHOT.jar`
 
+To run tests, cd to project root, then:
+* `gradlew test`
+
 ## Design decisions
 
 * I try to avoid as much as possible to load the files in memory (csv files are tipically very heavy)
