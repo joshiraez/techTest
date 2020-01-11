@@ -27,10 +27,10 @@ class FileCalculatorShould {
 
     private final static Path OUT_DIRECTORY = Paths.get(".");
 
-    private final static String TASK2 = "productCustomers";
     private static final String TASK3 = "customerRanking";
     private static final String ORDER_PRICES_CSV = "order_prices.csv";
     private static final String PRODUCT_CUSTOMER_CSV = "product_customers.csv";
+    private static final String CUSTOMER_RANKING_CSV = "customer_ranking.csv";
 
     //Delegation
     @Test
@@ -92,7 +92,7 @@ class FileCalculatorShould {
         File customers = getResourceFileOriginal(CUSTOMERS_CSV);
         File orders = getResourceFileOriginal(ORDERS_CSV);
 
-        File expectedOrderPrices = getResourceFileOriginal(PRODUCT_CUSTOMER_CSV);
+        File expected = getResourceFileOriginal(PRODUCT_CUSTOMER_CSV);
 
         ProductCustomerCalculator productCustomerCalculator = spy(new ProductCustomerCalculator(orders, OUT_DIRECTORY));
         FileCalculator fileCalculator = new FileCalculator(customers, products, orders, OUT_DIRECTORY, productCustomerCalculator);
@@ -103,7 +103,7 @@ class FileCalculatorShould {
 
         assertThat(contentOf(result))
                 .as("Expected product customers are generated")
-                .isEqualToIgnoringNewLines(contentOf(expectedOrderPrices));
+                .isEqualToIgnoringNewLines(contentOf(expected));
     }
 
     @Test
@@ -119,6 +119,26 @@ class FileCalculatorShould {
         fileCalculator.calculateCustomerRanking();
         //Then
         verify(customerRankingCalculator).calculateCustomerRanking();
+    }
+
+    @Test
+    void fileCalculatorDelegationBringsExpectedCustomerRanking() throws IOException {
+        //Given
+        File products = getResourceFileOriginal(PRODUCTS_CSV);
+        File customers = getResourceFileOriginal(CUSTOMERS_CSV);
+        File orders = getResourceFileOriginal(ORDERS_CSV);
+
+        File expected = getResourceFileOriginal(CUSTOMER_RANKING_CSV);
+
+        CustomerRankingCalculator customerRankingCalculator = spy(new CustomerRankingCalculator(customers, products, orders, OUT_DIRECTORY));
+        FileCalculator fileCalculator = new FileCalculator(customers, products, orders, OUT_DIRECTORY, customerRankingCalculator);
+        //When
+        final File result = fileCalculator.calculateCustomerRanking();
+        //Then
+        verify(customerRankingCalculator).calculateCustomerRanking();
+        assertThat(contentOf(result))
+                .as("Expected customer rankings are generated")
+                .isEqualToIgnoringNewLines(contentOf(expected));
     }
 
     //Task3

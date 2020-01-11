@@ -106,9 +106,9 @@ public class FileCalculator {
         final Map<Long, BigDecimal> productPrices = getProductPrices(productsToRetrieveInfoFromOrderedProducts);
         final Map<Long, BigDecimal> priceTotalsByCustomerId = getPriceTotals(productsOrderedByCustomerId, productPrices);
         final Map<Long, Customer> customerData = getCustomerData(productsOrderedByCustomerId.keySet());
-        final Map<Customer, BigDecimal> customerExpendings = zipById(customerData, priceTotalsByCustomerId);
+        final Map<Customer, BigDecimal> customerExpendings = Utils.zipById(customerData, priceTotalsByCustomerId);
 
-        return sortByValue(customerExpendings);
+        return Utils.sortByValue(customerExpendings);
     }
 
     private Map<Long, Customer> getCustomerData(final Set<Long> customerIds) throws IOException {
@@ -144,7 +144,7 @@ public class FileCalculator {
                 .map(line -> asList(line.split(",")))
                 .collect(
                         toMap(
-                                this::getCustomerFromOrderRecord,
+                                Utils::getCustomerFromOrderRecord,
                                 this::countProductsFromOrder,
                                 this::addProductCountsTogether
                         )
@@ -230,7 +230,7 @@ public class FileCalculator {
     }
 
     private Map<Long, Long> countProductsFromOrder(List<String> splittedOrderRecord) {
-        return Arrays.stream(splitProducts(splittedOrderRecord))
+        return Arrays.stream(Utils.splitProducts(splittedOrderRecord))
                 .map(Long::parseLong)
                 .collect(
                         groupingBy(
@@ -238,10 +238,6 @@ public class FileCalculator {
                                 counting()
                         )
                 );
-    }
-
-    private String[] splitProducts(final List<String> splittedOrderRecord) {
-        return splittedOrderRecord.get(2).split(" ");
     }
 
     private Long getRecordId(List<String> splittedOrderRecord) {
@@ -267,35 +263,8 @@ public class FileCalculator {
                 .collect(toList());
     }
 
-    private Long getCustomerFromOrderRecord(List<String> splittedLine) {
-        return Long.parseLong(splittedLine.get(1));
-    }
-
     private static List<String> splitByComma(String line) {
         return asList(line.split(","));
     }
 
-    private <T, U extends Comparable<U>> List<Pair<T, U>> sortByValue(final Map<T, U> mapToSortByValue) {
-        return mapToSortByValue.entrySet()
-                .stream()
-                .map(
-                        entry -> Pair.of(
-                                entry.getKey(),
-                                entry.getValue()
-                        )
-                )
-                .sorted((a, b) -> -a.getValue().compareTo(b.getValue()))
-                .collect(toList());
-    }
-
-    private <T, U> Map<T, U> zipById(final Map<Long, T> keyMap, final Map<Long, U> valueMap) {
-        return keyMap.entrySet()
-                .stream()
-                .collect(
-                        toMap(
-                                Map.Entry::getValue,
-                                entry -> valueMap.get(entry.getKey())
-                        )
-                );
-    }
 }

@@ -23,10 +23,13 @@ To run, cd to project root, then:
 * Many corner cases were not tested. For example: same product. Products not existing... Because they either were irrecoverable or it was very strange they could bug from the code logic.
   * Too many tests to maximixe coverage can get unmaintenable for almost no value (very strange cases).
   * If those corner cases bugged sometime, then we could make a test for that bug in particular.
+* After finishing, decided to divide the huge calculator class in various classes for each task
+  * We ensure a common point of maintenance in case we need to change the behaviour of some class
 
 ## Backlog decisions
 
-Things I know are improvable but didn't seem they were worth the time for the value they can bring
+I did the project using TDD, so it was kept rather minimalistic. I then refactored the things I saw were the most value, but there are many things that are improvable, just didn't seem as valuable.
+This list is that list of TODOs, things that can be added to aid the project but didn't seem critical at the moment.
 
 * Decided to leave the error handling and file validation tests after having the 3 tasks finished. 
   * These are unrecoverable failures, so there is no great value on having them controlled at first.
@@ -39,6 +42,7 @@ Things I know are improvable but didn't seem they were worth the time for the va
   * To have a single point of maintenance to all the Money functions/reducers/formatting
   * Instead of changing every BigDecimal ocurrence.
 * Put the data extractors of the files in another class. I didn't do it yet because is not huge enough to bring much value.
+* Some of the utils class methods are error prone and should be transformed from splitted List to dtos to get type safety when using them.
 
 # Overview
 
