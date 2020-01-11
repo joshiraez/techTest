@@ -38,12 +38,13 @@ public class FileCalculator {
         final String header = "id,euros";
         final String fileName = "order_prices.csv";
 
-        final List<List<Object>> contents = calculateOrderPricesContents();
+        final Map<Long, BigDecimal> orderPrices = calculateOrderPricesContents();
+        final List<List<Object>> contents = transformOrderPricesToRecords(orderPrices);
 
         return writeCsv(header, fileName, contents);
     }
 
-    private List<List<Object>> calculateOrderPricesContents() throws IOException {
+    private Map<Long, BigDecimal> calculateOrderPricesContents() throws IOException {
 
         final Map<Long, Map<Long, Long>> productsOrderedByOrderId = getProductsOrdered();
         final Set<Long> productsToRetrieveInfoFromOrderedProducts =
@@ -53,18 +54,17 @@ public class FileCalculator {
         return getPriceTotalsFromOrders(productsOrderedByOrderId, productPrices);
     }
 
-    private List<List<Object>> getPriceTotalsFromOrders(final Map<Long, Map<Long, Long>> productsOrderedByOrderId, final Map<Long, BigDecimal> productPrices) {
+    private Map<Long, BigDecimal> getPriceTotalsFromOrders(final Map<Long, Map<Long, Long>> productsOrderedByOrderId, final Map<Long, BigDecimal> productPrices) {
 
         return productsOrderedByOrderId
                 .entrySet()
                 .stream()
-                .map(
-                        order -> asList(
-                                order.getKey(),
-                                (Object) calculateOrderTotal(order.getValue(), productPrices)
+                .collect(
+                        toMap(
+                                Map.Entry::getKey,
+                                order -> calculateOrderTotal(order.getValue(), productPrices)
                         )
-                )
-                .collect(toList());
+                );
     }
 
     private BigDecimal calculateOrderTotal(final Map<Long, Long> orderedProducts, final Map<Long, BigDecimal> productPrices) {
@@ -166,5 +166,19 @@ public class FileCalculator {
         return record.stream()
                 .map(Object::toString)
                 .collect(Collectors.joining(","));
+    }
+
+    private List<List<Object>> transformOrderPricesToRecords(final Map<Long, BigDecimal> orderPrices) {
+        return orderPrices
+                .entrySet()
+                .stream()
+                .map(
+                        order -> asList(
+                                //Below cast needed because if not stream casts to a weird interface
+                                (Object) order.getKey(),
+                                order.getValue()
+                        )
+                )
+                .collect(toList());
     }
 }
