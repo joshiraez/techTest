@@ -30,7 +30,6 @@ Things I know are improvable but didn't seem they were worth the time for the va
 
 * Decided to leave the error handling and file validation tests after having the 3 tasks finished. 
   * These are unrecoverable failures, so there is no great value on having them controlled at first.
-* FileCalculator test class can be parameterized in a Data Driven Testing style
 * Each file generation can be separated to a new class, because they will be maintained in its own.
 * Sorting the different data structures to ids, in those where it was not specifically required
   * Task3 NEEDS sorting. This is already don.

@@ -1,6 +1,7 @@
 package calculators;
 
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.io.File;
 import java.io.IOException;
@@ -20,68 +21,24 @@ class OrderPriceCalculatorShould {
 
     private final static Path OUT_DIRECTORY = Paths.get(".");
 
-    @Test
-    void whenThereAreNoOrdersOrderPricesWillHaveNoOrders() throws IOException {
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+            "whenThereAreNoOrdersOrderPricesWillHaveNoOrders",
+            "whenThereAreOneOrderWithOneItemGetThePriceOfThatItem",
+            "whenThereIsOneOrderWithMultipleProductsThePriceShouldBeTheSumOfPrices",
+            "whenThereIsMultipleOrdersYouGetTheSumPriceOfItsProductsForEachOrder"
+    })
+    void priceOrderIsGeneratedCorrectly(String testCase) throws IOException {
         //Given
-        final String testName = "whenThereAreNoOrdersOrderPricesWillHaveNoOrders";
-        final OrderPriceCalculator orderPriceCalculator = buildCalculator(testName);
-        final File expected = getExpected(testName);
+        final OrderPriceCalculator orderPriceCalculator = buildCalculator(testCase);
+        final File expected = getExpected(testCase);
         //When
         final File result = orderPriceCalculator.calculateOrderPrices();
         //Then
         assertThat(result).exists();
         assertThat(contentOf(result))
-                .as("No orders has no orders records on order_prices")
                 .isEqualToIgnoringNewLines(contentOf(expected));
-    }
-
-
-    @Test
-    void whenThereAreOneOrderWithOneItemGetThePriceOfThatItem() throws IOException {
-        //Given
-        final String testName = "whenThereAreOneOrderWithOneItemGetThePriceOfThatItem";
-        final OrderPriceCalculator orderPriceCalculator = buildCalculator(testName);
-        final File expected = getExpected(testName);
-        //When
-        final File result = orderPriceCalculator.calculateOrderPrices();
-        //Then
-        assertThat(result).exists();
-        assertThat(contentOf(result))
-                .as("When only one order with one product, it should bring the price of the product")
-                .isEqualToIgnoringNewLines(contentOf(expected));
-
-    }
-
-    @Test
-    void whenThereIsOneOrderWithMultipleProductsThePriceShouldBeTheSumOfPrices() throws IOException {
-        //Given
-        final String testName = "whenThereIsOneOrderWithMultipleProductsThePriceShouldBeTheSumOfPrices";
-        final OrderPriceCalculator orderPriceCalculator = buildCalculator(testName);
-        final File expected = getExpected(testName);
-        //When
-        final File result = orderPriceCalculator.calculateOrderPrices();
-        //Then
-        assertThat(result).exists();
-        assertThat(contentOf(result))
-                .as("When only one order but with multiple products, it should bring the sum of the prices")
-                .isEqualToIgnoringNewLines(contentOf(expected));
-
-    }
-
-    @Test
-    void whenThereIsMultipleOrdersYouGetTheSumPriceOfItsProductsForEachOrder() throws IOException {
-        //Given
-        final String testName = "whenThereIsMultipleOrdersYouGetTheSumPriceOfItsProductsForEachOrder";
-        final OrderPriceCalculator orderPriceCalculator = buildCalculator(testName);
-        final File expected = getExpected(testName);
-        //When
-        final File result = orderPriceCalculator.calculateOrderPrices();
-        //Then
-        assertThat(result).exists();
-        assertThat(contentOf(result))
-                .as("It calculates order prices correctly with multiple orders")
-                .isEqualToIgnoringNewLines(contentOf(expected));
-
     }
 
     //Utils
