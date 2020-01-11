@@ -44,6 +44,35 @@ public class FileCalculator {
         return writeCsv(header, fileName, contents);
     }
 
+    public File calculateProductCustomers() throws IOException {
+        final String header = "id,customer_ids";
+        final String fileName = "product_customers.csv";
+
+//        final Map<Long, List<Long>> customersWhoOrderedProducts = getCustomersWhoOrderedProducts();
+//        final List<List<Object>> contents = transformCustomersWhoOrderedProductsToRecords(customersWhoOrderedProducts);
+//
+        return writeCsv(header, fileName, Arrays.asList());
+    }
+
+//    private Map<Long, List<Long>> getCustomersWhoOrderedProducts() throws IOException {
+//        final BufferedReader orders = new BufferedReader(new FileReader(this.orders));
+//
+//        orders.lines()
+//                .skip(1)
+//                .map(line -> asList(line.split(",")))
+//                .map(splittedLine)
+//                .collect(
+//                        toMap(
+//                                this::getRecordId,
+//                                this::countProductsFromOrder
+//                        )
+//                );
+//
+//        orders.close();
+//
+//        return null;
+//    }
+
     private Map<Long, BigDecimal> calculateOrderPricesContents() throws IOException {
 
         final Map<Long, Map<Long, Long>> productsOrderedByOrderId = getProductsOrdered();

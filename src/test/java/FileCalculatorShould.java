@@ -20,6 +20,7 @@ class FileCalculatorShould {
     private final static Path OUT_DIRECTORY = Paths.get(".");
 
     private final static String TASK1 = "orderPrices";
+    private final static String TASK2 = "productCustomers";
 
     //Task 1. Those can be parameterized
     @Test
@@ -83,6 +84,24 @@ class FileCalculatorShould {
                 .as("It calculates order prices correctly with multiple orders")
                 .isEqualToIgnoringNewLines(contentOf(expected));
 
+    }
+
+    //Task2
+    @Test
+    void whenThereAreNoOrdersYouGetAProductCustomersFileWithNoRecords() throws IOException {
+        //Given
+        final String testName = "whenThereAreNoOrdersYouGetAProductCustomersFileWithNoRecords";
+        final String task = TASK2;
+        final String testMessage = "When there are no orders, it brings a record empty product customers file";
+        final FileCalculator fileCalculator = buildFileCalculatorForTest(testName, task);
+        final File expected = withTestName.apply(testName, getResult).apply(task);
+        //When
+        final File result = fileCalculator.calculateProductCustomers();
+        //Then
+        assertThat(result).exists();
+        assertThat(contentOf(result))
+                .as(testMessage)
+                .isEqualToIgnoringNewLines(contentOf(expected));
     }
 
     //Helper methods and closures to reduce boilerplate to get the files
