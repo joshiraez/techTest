@@ -1,6 +1,7 @@
 package main;
 
 import calculators.OrderPriceCalculator;
+import calculators.ProductCustomerCalculator;
 import org.junit.jupiter.api.Test;
 
 import java.io.File;
@@ -25,7 +26,6 @@ class FileCalculatorShould {
 
     private final static Path OUT_DIRECTORY = Paths.get(".");
 
-    private final static String TASK1 = "orderPrices";
     private final static String TASK2 = "productCustomers";
     private static final String TASK3 = "customerRanking";
     private static final String ORDER_PRICES_CSV = "order_prices.csv";
@@ -66,6 +66,21 @@ class FileCalculatorShould {
                 .as("Expected order prices are generated")
                 .isEqualToIgnoringNewLines(contentOf(expectedOrderPrices));
 
+    }
+
+    @Test
+    void fileCalculatorDelegatesToProductCustomerCalculatorTheProductCustomerFile() throws IOException {
+        //Given
+        File products = getResourceFileOriginal(PRODUCTS_CSV);
+        File customers = getResourceFileOriginal(CUSTOMERS_CSV);
+        File orders = getResourceFileOriginal(ORDERS_CSV);
+
+        ProductCustomerCalculator productCustomerCalculator = mock(ProductCustomerCalculator.class);
+        FileCalculator fileCalculator = new FileCalculator(customers, products, orders, OUT_DIRECTORY, productCustomerCalculator);
+        //When
+        fileCalculator.calculateProductCustomers();
+        //Then
+        verify(productCustomerCalculator).calculateProductCustomers();
     }
 
     //Task2

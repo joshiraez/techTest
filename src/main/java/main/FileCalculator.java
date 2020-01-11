@@ -1,6 +1,7 @@
 package main;
 
 import calculators.OrderPriceCalculator;
+import calculators.ProductCustomerCalculator;
 import model.Customer;
 import org.apache.commons.lang3.tuple.Pair;
 import utils.Utils;
@@ -34,6 +35,7 @@ public class FileCalculator {
     private final File products;
     private final File orders;
     private final Path outDirectory;
+    private ProductCustomerCalculator productCustomerCalculator;
     private OrderPriceCalculator orderPriceCalculator;
 
     public FileCalculator(final File customers, final File products, final File orders, final Path outDirectory) {
@@ -53,12 +55,28 @@ public class FileCalculator {
         this.orderPriceCalculator = orderPriceCalculator;
     }
 
+    public FileCalculator(final File customers, final File products, final File orders, final Path outDirectory, final ProductCustomerCalculator productCustomerCalculator) {
+
+        this.customers = customers;
+        this.products = products;
+        this.orders = orders;
+        this.outDirectory = outDirectory;
+        this.productCustomerCalculator = productCustomerCalculator;
+    }
+
     public File calculateOrderPrices() throws IOException {
 
         return orderPriceCalculator.calculateOrderPrices();
     }
 
     public File calculateProductCustomers() throws IOException {
+
+        if (productCustomerCalculator == null) return _calculateProductCustomers();
+
+        return productCustomerCalculator.calculateProductCustomers();
+    }
+
+    public File _calculateProductCustomers() throws IOException {
         final String header = "id,customer_ids";
         final String fileName = "product_customers.csv";
 
