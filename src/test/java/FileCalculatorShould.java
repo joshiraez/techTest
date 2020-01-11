@@ -158,6 +158,24 @@ class FileCalculatorShould {
                 .isEqualToIgnoringNewLines(contentOf(expected));
     }
 
+    @Test
+    void whenThereAreMultipleOrdersWithMultipleProductsItBringsTheCorrectAssociations() throws IOException {
+        //Given
+        final String testName = "whenThereAreMultipleOrdersWithMultipleProductsItBringsTheCorrectAssociations";
+        final String task = TASK2;
+        final String testMessage = "When there are multiple orders of multiple products, " +
+                "it brings the correct associations";
+        final FileCalculator fileCalculator = buildFileCalculatorForTest(testName, task);
+        final File expected = withTestName.apply(testName, getResult).apply(task);
+        //When
+        final File result = fileCalculator.calculateProductCustomers();
+        //Then
+        assertThat(result).exists();
+        assertThat(contentOf(result))
+                .as(testMessage)
+                .isEqualToIgnoringNewLines(contentOf(expected));
+    }
+
     //Helper methods and closures to reduce boilerplate to get the files
     private File getResourceFile(final String task, final String testName, final String fileName) {
 
