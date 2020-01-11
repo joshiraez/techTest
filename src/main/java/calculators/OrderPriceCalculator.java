@@ -58,10 +58,10 @@ public class OrderPriceCalculator {
 
         final Map<Long, Map<Long, Long>> productsOrderedByOrderId = orders.lines()
                 .skip(1)
-                .map(this::splitByComma)
+                .map(Utils::splitByComma)
                 .collect(
                         toMap(
-                                this::getRecordId,
+                                Utils::getRecordId,
                                 this::countProductsFromOrder
                         )
                 );
@@ -72,7 +72,7 @@ public class OrderPriceCalculator {
     }
 
     private Map<Long, Long> countProductsFromOrder(List<String> splittedOrderRecord) {
-        return Arrays.stream(splitProducts(splittedOrderRecord))
+        return Arrays.stream(Utils.splitProducts(splittedOrderRecord))
                 .map(Long::parseLong)
                 .collect(
                         groupingBy(
@@ -94,14 +94,13 @@ public class OrderPriceCalculator {
 
         final Map<Long, BigDecimal> productPrices = products.lines()
                 .skip(1)
-                .map(this::splitByComma)
-                .filter(splittedLine ->
-                        productsToRetrieveInfoFromOrderedProducts
-                                .contains(getRecordId(splittedLine)))
+                .map(Utils::splitByComma)
+                .filter(splittedLine -> productsToRetrieveInfoFromOrderedProducts
+                        .contains(Utils.getRecordId(splittedLine)))
                 .collect(
                         toMap(
-                                this::getRecordId,
-                                this::getProductPrice
+                                Utils::getRecordId,
+                                Utils::getProductPrice
                         )
                 );
 
@@ -148,22 +147,6 @@ public class OrderPriceCalculator {
                         )
                 )
                 .collect(toList());
-    }
-
-    private Long getRecordId(List<String> splittedOrderRecord) {
-        return Long.parseLong(splittedOrderRecord.get(0));
-    }
-
-    private BigDecimal getProductPrice(List<String> splittedProductRecord) {
-        return new BigDecimal(splittedProductRecord.get(2));
-    }
-
-    private String[] splitProducts(final List<String> splittedOrderRecord) {
-        return splittedOrderRecord.get(2).split(" ");
-    }
-
-    private List<String> splitByComma(String line) {
-        return asList(line.split(","));
     }
 
 
