@@ -1,4 +1,7 @@
+package main;
+
 import calculators.OrderPriceCalculator;
+import model.Customer;
 import org.apache.commons.lang3.tuple.Pair;
 import utils.Utils;
 
@@ -211,7 +214,7 @@ public class FileCalculator {
         final Map<Long, Set<Long>> customersWhoOrderedProduct = orders.lines()
                 .skip(1)
                 .map(FileCalculator::splitByComma)
-                //The next flat map converts each order record to a stream of pairs <Product, Customer> with all products in the order
+                //The next flat map converts each order record to a stream of pairs <Product, model.Customer> with all products in the order
                 .flatMap(splittedLine ->
                         Stream.of(splitProducts(splittedLine))
                                 .map(

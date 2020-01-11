@@ -1,0 +1,5 @@
+package calculators;
+
+class OrderPriceCalculatorShould {
+
+}
