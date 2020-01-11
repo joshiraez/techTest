@@ -34,7 +34,7 @@ class FileCalculatorShould {
         assertThat(result).exists();
         assertThat(contentOf(result))
                 .as("No orders has no orders records on order_prices")
-                .isEqualTo(contentOf(expected));
+                .isEqualToIgnoringNewLines(contentOf(expected));
     }
 
     @Test
@@ -49,7 +49,7 @@ class FileCalculatorShould {
         assertThat(result).exists();
         assertThat(contentOf(result))
                 .as("When only one order with one product, it should bring the price of the product")
-                .isEqualTo(contentOf(expected));
+                .isEqualToIgnoringNewLines(contentOf(expected));
 
     }
 
@@ -65,7 +65,7 @@ class FileCalculatorShould {
         assertThat(result).exists();
         assertThat(contentOf(result))
                 .as("When only one order with one product, it should bring the price of the product")
-                .isEqualTo(contentOf(expected));
+                .isEqualToIgnoringNewLines(contentOf(expected));
 
     }
 
@@ -81,7 +81,7 @@ class FileCalculatorShould {
         assertThat(result).exists();
         assertThat(contentOf(result))
                 .as("When only one order with one product, it should bring the price of the product")
-                .isEqualTo(contentOf(expected));
+                .isEqualToIgnoringNewLines(contentOf(expected));
 
     }
 

@@ -150,11 +150,11 @@ public class FileCalculator {
 
         final FileWriter fileWriter = new FileWriter(file);
 
-        fileWriter.append(header).append("\n");
+        fileWriter.append(header).append(System.lineSeparator());
 
         //Can't use streams because File Writer has checked exceptions and becomes ugly
         for (List<Object> record : contents) {
-            fileWriter.append(generateCsvRecord(record)).append("\n");
+            fileWriter.append(generateCsvRecord(record)).append(System.lineSeparator());
         }
 
         fileWriter.close();
