@@ -148,7 +148,7 @@ class FileCalculatorShould {
         final String testName = "whenThereAreNoOrdersTheCustomerRankingWillHaveNoRecords";
         final String task = TASK3;
         final String testMessage = "When there are no orders, it brings a record empty customer ranking file";
-        final FileCalculator fileCalculator = buildFileCalculatorForTest(testName, task);
+        final FileCalculator fileCalculator = buildFileCalculatorForTestWithCustomerRanking(testName, task);
         final File expected = withTestName.apply(testName, getResult).apply(task);
         //When
         final File result = fileCalculator.calculateCustomerRanking();
@@ -165,7 +165,7 @@ class FileCalculatorShould {
         final String testName = "whenThereIsASingleOrderCustomerRankingWillBringThatCustomerWithOrderPrice";
         final String task = TASK3;
         final String testMessage = "When there is a single order, it brings the customer with the order total";
-        final FileCalculator fileCalculator = buildFileCalculatorForTest(testName, task);
+        final FileCalculator fileCalculator = buildFileCalculatorForTestWithCustomerRanking(testName, task);
         final File expected = withTestName.apply(testName, getResult).apply(task);
         //When
         final File result = fileCalculator.calculateCustomerRanking();
@@ -182,7 +182,7 @@ class FileCalculatorShould {
         final String testName = "whenThereAreMultipleOrdersForTheSameCustomerItWillBringTheSumOfTheOrderCostsForTheCustomer";
         final String task = TASK3;
         final String testMessage = "When there many orders for the same customer, it brings the customer with the total of the orders";
-        final FileCalculator fileCalculator = buildFileCalculatorForTest(testName, task);
+        final FileCalculator fileCalculator = buildFileCalculatorForTestWithCustomerRanking(testName, task);
         final File expected = withTestName.apply(testName, getResult).apply(task);
         //When
         final File result = fileCalculator.calculateCustomerRanking();
@@ -199,7 +199,7 @@ class FileCalculatorShould {
         final String testName = "whenThereAreMultipleOrderFromMultiplePeopleItGetsItsExpendingTotalsRightAndOrdersThemDescending";
         final String task = TASK3;
         final String testMessage = "When there orders from different customers, it sets the total for each customer and ranks them in descending expendings";
-        final FileCalculator fileCalculator = buildFileCalculatorForTest(testName, task);
+        final FileCalculator fileCalculator = buildFileCalculatorForTestWithCustomerRanking(testName, task);
         final File expected = withTestName.apply(testName, getResult).apply(task);
         //When
         final File result = fileCalculator.calculateCustomerRanking();
@@ -246,13 +246,13 @@ class FileCalculatorShould {
         return new FileCalculator(customers, products, orders, OUT_DIRECTORY);
     }
 
-    private FileCalculator buildFileCalculatorForTestWithProductCustomer(String testName, String taskName) {
+    private FileCalculator buildFileCalculatorForTestWithCustomerRanking(String testName, String taskName) {
         final File customers = withTestName.apply(testName, getCustomers).apply(taskName);
         final File products = withTestName.apply(testName, getProducts).apply(taskName);
         final File orders = withTestName.apply(testName, getOrders).apply(taskName);
 
-        final ProductCustomerCalculator productCustomerCalculator = new ProductCustomerCalculator(orders, OUT_DIRECTORY);
+        final CustomerRankingCalculator customerRankingCalculator = new CustomerRankingCalculator(customers, products, orders, OUT_DIRECTORY);
 
-        return new FileCalculator(customers, products, orders, OUT_DIRECTORY, productCustomerCalculator);
+        return new FileCalculator(customers, products, orders, OUT_DIRECTORY, customerRankingCalculator);
     }
 }
