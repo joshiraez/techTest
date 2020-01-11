@@ -9,8 +9,6 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.function.BiFunction;
-import java.util.function.Function;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.contentOf;
@@ -36,12 +34,8 @@ class FileCalculatorShould {
     @Test
     void fileCalculatorDelegatesToOrderPriceCalculatorTheOrderPricesFile() throws IOException {
         //Given
-        File products = getResourceFileOriginal(PRODUCTS_CSV);
-        File customers = getResourceFileOriginal(CUSTOMERS_CSV);
-        File orders = getResourceFileOriginal(ORDERS_CSV);
-
         OrderPriceCalculator orderPriceCalculator = mock(OrderPriceCalculator.class);
-        FileCalculator fileCalculator = new FileCalculator(customers, products, orders, OUT_DIRECTORY, orderPriceCalculator);
+        FileCalculator fileCalculator = new FileCalculator(orderPriceCalculator);
         //When
         fileCalculator.calculateOrderPrices();
         //Then
@@ -52,13 +46,12 @@ class FileCalculatorShould {
     void fileCalculatorDelegationBringsExpectedOrdersPrice() throws IOException {
         //Given
         File products = getResourceFileOriginal(PRODUCTS_CSV);
-        File customers = getResourceFileOriginal(CUSTOMERS_CSV);
         File orders = getResourceFileOriginal(ORDERS_CSV);
 
         File expectedOrderPrices = getResourceFileOriginal(ORDER_PRICES_CSV);
 
         OrderPriceCalculator orderPriceCalculator = spy(new OrderPriceCalculator(products, orders, OUT_DIRECTORY));
-        FileCalculator fileCalculator = new FileCalculator(customers, products, orders, OUT_DIRECTORY, orderPriceCalculator);
+        FileCalculator fileCalculator = new FileCalculator(orderPriceCalculator, null, null);
         //When
         final File result = fileCalculator.calculateOrderPrices();
         //Then
@@ -73,12 +66,8 @@ class FileCalculatorShould {
     @Test
     void fileCalculatorDelegatesToProductCustomerCalculatorTheProductCustomerFile() throws IOException {
         //Given
-        File products = getResourceFileOriginal(PRODUCTS_CSV);
-        File customers = getResourceFileOriginal(CUSTOMERS_CSV);
-        File orders = getResourceFileOriginal(ORDERS_CSV);
-
-        ProductCustomerCalculator productCustomerCalculator = spy(new ProductCustomerCalculator(orders, OUT_DIRECTORY));
-        FileCalculator fileCalculator = new FileCalculator(customers, products, orders, OUT_DIRECTORY, productCustomerCalculator);
+        ProductCustomerCalculator productCustomerCalculator = mock(ProductCustomerCalculator.class);
+        FileCalculator fileCalculator = new FileCalculator(productCustomerCalculator);
         //When
         fileCalculator.calculateProductCustomers();
         //Then
@@ -88,14 +77,12 @@ class FileCalculatorShould {
     @Test
     void fileCalculatorDelegationBringsExpectedProductCustomer() throws IOException {
         //Given
-        File products = getResourceFileOriginal(PRODUCTS_CSV);
-        File customers = getResourceFileOriginal(CUSTOMERS_CSV);
         File orders = getResourceFileOriginal(ORDERS_CSV);
 
         File expected = getResourceFileOriginal(PRODUCT_CUSTOMER_CSV);
 
         ProductCustomerCalculator productCustomerCalculator = spy(new ProductCustomerCalculator(orders, OUT_DIRECTORY));
-        FileCalculator fileCalculator = new FileCalculator(customers, products, orders, OUT_DIRECTORY, productCustomerCalculator);
+        FileCalculator fileCalculator = new FileCalculator(productCustomerCalculator);
         //When
         final File result = fileCalculator.calculateProductCustomers();
         //Then
@@ -109,12 +96,8 @@ class FileCalculatorShould {
     @Test
     void fileCalculatorDelegatesToCustomerRankingCalculatortheCustomerRankingFile() throws IOException {
         //Given
-        File products = getResourceFileOriginal(PRODUCTS_CSV);
-        File customers = getResourceFileOriginal(CUSTOMERS_CSV);
-        File orders = getResourceFileOriginal(ORDERS_CSV);
-
         CustomerRankingCalculator customerRankingCalculator = mock(CustomerRankingCalculator.class);
-        FileCalculator fileCalculator = new FileCalculator(customers, products, orders, OUT_DIRECTORY, customerRankingCalculator);
+        FileCalculator fileCalculator = new FileCalculator(customerRankingCalculator);
         //When
         fileCalculator.calculateCustomerRanking();
         //Then
@@ -131,7 +114,7 @@ class FileCalculatorShould {
         File expected = getResourceFileOriginal(CUSTOMER_RANKING_CSV);
 
         CustomerRankingCalculator customerRankingCalculator = spy(new CustomerRankingCalculator(customers, products, orders, OUT_DIRECTORY));
-        FileCalculator fileCalculator = new FileCalculator(customers, products, orders, OUT_DIRECTORY, customerRankingCalculator);
+        FileCalculator fileCalculator = new FileCalculator(customerRankingCalculator);
         //When
         final File result = fileCalculator.calculateCustomerRanking();
         //Then
@@ -141,83 +124,6 @@ class FileCalculatorShould {
                 .isEqualToIgnoringNewLines(contentOf(expected));
     }
 
-    //Task3
-    @Test
-    void whenThereAreNoOrdersTheCustomerRankingWillHaveNoRecords() throws IOException {
-        //Given
-        final String testName = "whenThereAreNoOrdersTheCustomerRankingWillHaveNoRecords";
-        final String task = TASK3;
-        final String testMessage = "When there are no orders, it brings a record empty customer ranking file";
-        final FileCalculator fileCalculator = buildFileCalculatorForTestWithCustomerRanking(testName, task);
-        final File expected = withTestName.apply(testName, getResult).apply(task);
-        //When
-        final File result = fileCalculator.calculateCustomerRanking();
-        //Then
-        assertThat(result).exists();
-        assertThat(contentOf(result))
-                .as(testMessage)
-                .isEqualToIgnoringNewLines(contentOf(expected));
-    }
-
-    @Test
-    void whenThereIsASingleOrderCustomerRankingWillBringThatCustomerWithOrderPrice() throws IOException {
-        //Given
-        final String testName = "whenThereIsASingleOrderCustomerRankingWillBringThatCustomerWithOrderPrice";
-        final String task = TASK3;
-        final String testMessage = "When there is a single order, it brings the customer with the order total";
-        final FileCalculator fileCalculator = buildFileCalculatorForTestWithCustomerRanking(testName, task);
-        final File expected = withTestName.apply(testName, getResult).apply(task);
-        //When
-        final File result = fileCalculator.calculateCustomerRanking();
-        //Then
-        assertThat(result).exists();
-        assertThat(contentOf(result))
-                .as(testMessage)
-                .isEqualToIgnoringNewLines(contentOf(expected));
-    }
-
-    @Test
-    void whenThereAreMultipleOrdersForTheSameCustomerItWillBringTheSumOfTheOrderCostsForTheCustomer() throws IOException {
-        //Given
-        final String testName = "whenThereAreMultipleOrdersForTheSameCustomerItWillBringTheSumOfTheOrderCostsForTheCustomer";
-        final String task = TASK3;
-        final String testMessage = "When there many orders for the same customer, it brings the customer with the total of the orders";
-        final FileCalculator fileCalculator = buildFileCalculatorForTestWithCustomerRanking(testName, task);
-        final File expected = withTestName.apply(testName, getResult).apply(task);
-        //When
-        final File result = fileCalculator.calculateCustomerRanking();
-        //Then
-        assertThat(result).exists();
-        assertThat(contentOf(result))
-                .as(testMessage)
-                .isEqualToIgnoringNewLines(contentOf(expected));
-    }
-
-    @Test
-    void whenThereAreMultipleOrderFromMultiplePeopleItGetsItsExpendingTotalsRightAndOrdersThemDescending() throws IOException {
-        //Given
-        final String testName = "whenThereAreMultipleOrderFromMultiplePeopleItGetsItsExpendingTotalsRightAndOrdersThemDescending";
-        final String task = TASK3;
-        final String testMessage = "When there orders from different customers, it sets the total for each customer and ranks them in descending expendings";
-        final FileCalculator fileCalculator = buildFileCalculatorForTestWithCustomerRanking(testName, task);
-        final File expected = withTestName.apply(testName, getResult).apply(task);
-        //When
-        final File result = fileCalculator.calculateCustomerRanking();
-        //Then
-        assertThat(result).exists();
-        assertThat(contentOf(result))
-                .as(testMessage)
-                .isEqualToIgnoringNewLines(contentOf(expected));
-    }
-
-    //Helper methods and closures to reduce boilerplate to get the files
-    private File getResourceFile(final String task, final String testName, final String fileName) {
-
-        final String pathToFile = "/" + task + "/" + testName + "/" + fileName;
-
-        return new File(getClass().getResource(pathToFile).getFile());
-    }
-
     private File getResourceFileOriginal(final String fileName) {
 
         final String pathToFile = "/originals/" + fileName;
@@ -225,34 +131,4 @@ class FileCalculatorShould {
         return new File(getClass().getResource(pathToFile).getFile());
     }
 
-    private BiFunction<String, String, File> getProducts =
-            (String task, String url) -> getResourceFile(task, url, PRODUCTS_CSV);
-    private BiFunction<String, String, File> getOrders =
-            (String task, String url) -> getResourceFile(task, url, ORDERS_CSV);
-    private BiFunction<String, String, File> getCustomers =
-            (String task, String url) -> getResourceFile(task, url, CUSTOMERS_CSV);
-    private BiFunction<String, String, File> getResult =
-            (String task, String url) -> getResourceFile(task, url, RESULT_CSV);
-
-    private BiFunction<String, BiFunction<String, String, File>, Function<String, File>> withTestName
-            = (String testName, BiFunction<String, String, File> onGetter) ->
-            taskName -> onGetter.apply(taskName, testName);
-
-    private FileCalculator buildFileCalculatorForTest(String testName, String taskName) {
-        final File customers = withTestName.apply(testName, getCustomers).apply(taskName);
-        final File products = withTestName.apply(testName, getProducts).apply(taskName);
-        final File orders = withTestName.apply(testName, getOrders).apply(taskName);
-
-        return new FileCalculator(customers, products, orders, OUT_DIRECTORY);
-    }
-
-    private FileCalculator buildFileCalculatorForTestWithCustomerRanking(String testName, String taskName) {
-        final File customers = withTestName.apply(testName, getCustomers).apply(taskName);
-        final File products = withTestName.apply(testName, getProducts).apply(taskName);
-        final File orders = withTestName.apply(testName, getOrders).apply(taskName);
-
-        final CustomerRankingCalculator customerRankingCalculator = new CustomerRankingCalculator(customers, products, orders, OUT_DIRECTORY);
-
-        return new FileCalculator(customers, products, orders, OUT_DIRECTORY, customerRankingCalculator);
-    }
 }
