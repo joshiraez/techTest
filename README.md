@@ -37,6 +37,7 @@ This list is that list of TODOs, things that can be added to aid the project but
 * Decided to leave the error handling and file validation tests after having the 3 tasks finished. 
   * These are unrecoverable failures, so there is no great value on having them controlled at first.
 * Each file generation can be separated to a new class, because they will be maintained in its own.
+  * Put the data extractors of the files in another class. I didn't do it yet because is not huge enough to bring much value.
 * Sorting the different data structures to ids, in those where it was not specifically required
   * Task3 NEEDS sorting. This is already don.
   * But Task 1 by order id
@@ -44,7 +45,6 @@ This list is that list of TODOs, things that can be added to aid the project but
 * Putting the Money qtys in a "Money" class of sorts
   * To have a single point of maintenance to all the Money functions/reducers/formatting
   * Instead of changing every BigDecimal ocurrence.
-* Put the data extractors of the files in another class. I didn't do it yet because is not huge enough to bring much value.
 * Some of the utils class methods are error prone and should be transformed from splitted List to dtos to get type safety when using them.
 
 # Overview
